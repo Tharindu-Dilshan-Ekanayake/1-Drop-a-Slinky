@@ -2,6 +2,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import { Vector3 } from 'three'
 
+import { inRollZone } from '@shared/world'
+
 import { getBloxityState } from '../bloxity/store'
 import { launch } from './launch'
 import { placeLocalBubble } from './remote/nameplates'
@@ -30,6 +32,8 @@ const _desired = new Vector3()
 const _target = new Vector3()
 /** How far the view has swung round for the stretch (0-1), eased. */
 let stretchView = 0
+/** 0-1: how far the view has tipped down the stairs, standing in the DROP ZONE. */
+let edgeView = 0
 
 /**
  * Third-person orbit camera around the player.
@@ -132,15 +136,19 @@ export function FollowCamera() {
     }
     const delta = Math.min(rawDelta, 0.05)
     const p = runtime.player.position
-    // Winding up a throw at the edge: over your shoulder, looking out and down past the
-    // edge at the hotel far below - where it's going.
+    // Winding up a toss at the top of the stairs: over your shoulder, looking down the
+    // Great Staircase - where it's going. Just standing in the DROP ZONE, the view tips
+    // down a little too, so the stairs falling away below are in sight.
     const want = launch.gripping || launch.released ? 1 : 0
     stretchView += (want - stretchView) * (1 - Math.exp(-5 * delta))
-    _target.set(p.x, p.y + LOOK_HEIGHT - 3.5 * stretchView, p.z - 7 * stretchView)
+    const wantEdge = inRollZone(p.x, p.z, 1) ? 1 : 0
+    edgeView += (wantEdge - edgeView) * (1 - Math.exp(-3 * delta))
+    const edge = edgeView * (1 - stretchView)
+    _target.set(p.x, p.y + LOOK_HEIGHT - 3.5 * stretchView - 2.4 * edge, p.z - 7 * stretchView - 6 * edge)
 
     // Spherical -> cartesian. yaw 0 puts the camera south of the player, looking north.
     const yaw = runtime.camera.yaw * (1 - stretchView) + 0.28 * stretchView
-    const pitch = runtime.camera.pitch + 0.2 * stretchView
+    const pitch = runtime.camera.pitch + 0.2 * stretchView + 0.22 * edge
     const distance = runtime.camera.distance - 2 * stretchView
     const horizontal = Math.cos(pitch) * distance
     _desired.set(

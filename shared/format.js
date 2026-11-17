@@ -29,13 +29,19 @@ export function formatGain(value) {
   return formatNumber(value)
 }
 
-/** Metres flown: "1,050 m" in full up to a million, then like formatNumber. */
-export function formatDistance(meters) {
-  const m = Math.max(0, Math.floor(meters))
-  if (m >= 1e6) return `${formatNumber(m)} m`
+/** Stairs as a number: "1,050" in full up to a million, then like formatNumber. */
+export function formatStairs(stairs) {
+  const m = Math.max(0, Math.floor(stairs))
+  if (m >= 1e6) return formatNumber(m)
   let s = String(m)
   for (let i = s.length - 3; i > 0; i -= 3) s = `${s.slice(0, i)},${s.slice(i)}`
-  return `${s} m`
+  return s
+}
+
+/** Stairs gone down: "1,050 stairs" in full up to a million, then like formatNumber. */
+export function formatDistance(stairs) {
+  const m = Math.max(0, Math.floor(stairs))
+  return `${formatStairs(m)} ${m === 1 ? 'stair' : 'stairs'}`
 }
 
 /** Multiplier display: x1, x1.65, x2.5, x12, x1.2K. */

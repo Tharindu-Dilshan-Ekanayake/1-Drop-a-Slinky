@@ -64,7 +64,7 @@ function TutorialBanner({ step }) {
  */
 function goalFor(profile, pending) {
   if (isMaxLevel(profile)) {
-    return { key: 'rebirth', text: `REBIRTH READY! Rebirth for x${rebirthMultiplier(profile.rebirths + 1)} Skill`, progress: null, panel: 'rebirth' }
+    return { key: 'rebirth', text: `REBIRTH READY! Rebirth for x${rebirthMultiplier(profile.rebirths + 1)} Power`, progress: null, panel: 'rebirth' }
   }
   const next = nextTire(profile)
   if (next) {
@@ -72,7 +72,7 @@ function goalFor(profile, pending) {
     const affordable = wins >= next.cost
     return {
       key: `${affordable ? 'buy' : 'save'}:${next.id}`,
-      text: affordable ? `You can buy the ${next.name}! Visit the Phone Shop` : `Next phone: ${next.name} (${formatNumber(wins)}/${formatNumber(next.cost)} Wins)`,
+      text: affordable ? `You can buy the ${next.name}! Visit the Slinky Shop` : `Next slinky: ${next.name} (${formatNumber(wins)}/${formatNumber(next.cost)} Wins)`,
       progress: Math.min(1, wins / Math.max(1, next.cost)),
       panel: null,
     }

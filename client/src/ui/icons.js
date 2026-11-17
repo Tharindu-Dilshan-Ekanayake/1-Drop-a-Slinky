@@ -157,29 +157,30 @@ const heart = svg(
 )
 
 /**
- * A phone, tipped over and falling, its screen cracked, with speed marks behind it - in a
- * thick ink outline. Still named `tire`, so every place that showed the template's tire
- * (the DROP button, the shop, the passes, the loading screen) shows the phone.
+ * A rainbow slinky walking down a step: its coils arching from the top step over to the
+ * one below, in a thick ink outline. Still named `tire`, so every place that showed the
+ * template's tire (the DROP button, the shop, the passes, the loading screen) shows it.
  */
+const SLINKY_ICON_COLORS = ['#ff4a4a', '#ff9a1e', '#ffe23a', '#4be05a', '#2fd0ff', '#5a7aff', '#b05cff', '#ff5fd2']
+/** The arch's rings: [x, y, degrees] each, from the top step over to the lower one. */
+export const SLINKY_ARCH = Array.from({ length: 13 }, (_, i) => {
+  const t = i / 12
+  const a = Math.PI - t * Math.PI
+  const x = 50 + Math.cos(a) * 30
+  const y = 60 - Math.sin(a) * 36 + t * 18
+  return [x, y, (-a * 180) / Math.PI]
+})
 const tire = svg(
-  `<g transform="rotate(-24 52 50)">
-    <rect x="30" y="10" width="44" height="80" rx="10" fill="url(#ph-c)" stroke="${OUT}" stroke-width="6"/>
-    <rect x="36" y="18" width="32" height="62" rx="4" fill="url(#ph-s)" stroke="${OUT}" stroke-width="3"/>
-    <rect x="45" y="13" width="14" height="3.5" rx="1.75" fill="${OUT}"/>
-    <path d="M58 30l-6 12 8 6-10 14M52 42l-10 4M60 48l6 10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M40 24q4-4 10-4" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-  </g>
-  <path d="M8 34l14 4M6 50l14 1M10 66l13-3" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-  <path d="M8 34l14 4M6 50l14 1M10 66l13-3" stroke="${OUT}" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>`,
-  vgrad('ph-c', [
-    [0, '#6aa8ff'],
-    [1, '#2a4fd8'],
-  ]) +
-    vgrad('ph-s', [
-      [0, '#bff6ff'],
-      [0.5, '#5fd6ff'],
-      [1, '#3a6bff'],
-    ]),
+  `<path d="M2 66h42v18h54v14H2z" fill="url(#sl-s)" stroke="${OUT}" stroke-width="5" stroke-linejoin="round"/>` +
+    SLINKY_ARCH.map(([x, y, deg], i) => {
+      const t = `transform="rotate(${deg.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"`
+      const at = `cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="13" ry="4.4"`
+      return `<ellipse ${at} ${t} fill="none" stroke="${OUT}" stroke-width="7.5"/><ellipse ${at} ${t} fill="none" stroke="${SLINKY_ICON_COLORS[i % SLINKY_ICON_COLORS.length]}" stroke-width="3.6"/>`
+    }).join(''),
+  vgrad('sl-s', [
+    [0, '#ffffff'],
+    [1, '#c9d2de'],
+  ]),
 )
 
 /** A round potion flask with a cork, filled with `liquid` and a small badge icon. */

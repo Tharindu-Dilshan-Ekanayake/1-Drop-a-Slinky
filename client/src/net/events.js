@@ -9,7 +9,7 @@ import { getGame } from '../store/game'
 import { fadeThrough } from '../ui/fade'
 import { refreshRemoteWorlds } from './remotePlayers'
 
-/** A point above wherever you're watching: you in the lobby, or your falling phone. */
+/** A point above wherever you're watching: you in the lobby, or your slinky on the stairs. */
 const atPlayer = (dy = 1.2) => {
   const p = roll.active ? roll.position : runtime.player.position
   return { x: p.x, y: p.y + dy, z: p.z }
@@ -38,7 +38,7 @@ export function handleServerEvent(type, payload) {
         const tire = TIRES.find((t) => t.id === payload.profile.equippedTire)
         // The first phone bought ends the tutorial: say so too.
         const done = before.tutorialStep < TUTORIAL.length && payload.profile.tutorialStep >= TUTORIAL.length
-        if (tire) game.showToast(`NEW PHONE: ${tire.name}!${done ? ' Tutorial complete - have fun!' : ''}`)
+        if (tire) game.showToast(`NEW SLINKY: ${tire.name}!${done ? ' Tutorial complete - have fun!' : ''}`)
       }
       break
     }
@@ -104,7 +104,7 @@ export function handleServerEvent(type, payload) {
       sfx.wins()
       sfx.levelUp()
       burst({ ...atPlayer(2), count: 70, palette: 'gold', speed: 10 })
-      game.showToast('SECRET STAR FOUND! x2 SKILL FOREVER!')
+      game.showToast('SECRET STAR FOUND! x2 POWER FOREVER!')
       break
     }
 

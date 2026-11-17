@@ -4,24 +4,18 @@ import {
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
-  CanvasTexture,
   Color,
   CylinderGeometry,
   DoubleSide,
   InstancedMesh,
-  LinearFilter,
   Matrix4,
-  Mesh,
-  MeshBasicMaterial,
-  PlaneGeometry,
   Quaternion,
   ShaderMaterial,
-  SRGBColorSpace,
   TorusGeometry,
   Vector3,
 } from 'three'
 
-import { DROP_AIR, TROPHY_FIRST, TROPHY_SPACING } from '@shared/balance'
+import { TROPHY_FIRST, TROPHY_SPACING } from '@shared/balance'
 import { formatNumber } from '@shared/format'
 import { trophyValue, winsMultiplier } from '@shared/logic'
 import { mulberry32 } from '@shared/rng'
@@ -30,21 +24,21 @@ import { sfx } from '../../audio/sfx'
 import { getGame, useGame } from '../../store/game'
 import { getQuality, useQuality } from '../../store/quality'
 import { iconUrl } from '../../ui/icons'
-import { asToyInstance, createToyInstances, PropBuilder } from '../blocks'
+import { createToyInstances, PropBuilder } from '../blocks'
 import FireBurst from '../fx/FireBurst'
 import { spawnScattered } from '../fx/popups'
 import { linkPrograms } from '../linkPrograms'
 import { sharedMaterials, STYLE } from '../materials'
-import { addPhone, phoneDims, phoneTrail } from '../phoneStyles'
 import { runtime } from '../runtime'
-import { activeWorld, showLobbySky, zones } from '../worldLook'
-import Debris from './Debris'
-import { PHONE_SCALE, T_RELEASE, yAtMeter } from './dropPath'
+import { slinkyTrail } from '../slinkyStyles'
+import { activeWorld, blendSky, showLobbySky, zones } from '../worldLook'
 import { writeDistance, writeSpeed, writeZone } from './hudLink'
-import { floorNameGradient } from './roomThemes'
 import { advanceRoll, roll } from './rollControl'
+import Slinky from './Slinky'
 import SpeedBlur from './SpeedBlur'
-import Tower from './Tower'
+import { stageNameGradient, THEME_SKIES } from './stageThemes'
+import Stairs from './Stairs'
+import { HOOP_FROM, HOOP_FULL, RISE, RUN, stepPoint } from './stairsPath'
 
 const MAX_TROPHIES = 12
 const STREAKS = 36
@@ -53,33 +47,43 @@ const STREAKS = 36
  * projects into it (name tags, popups). Negative, so R3F still renders itself.
  */
 const BEFORE_EVERYTHING = -1
+/** Metres per stair along the slope. */
+const STAIR_LENGTH = Math.hypot(RISE, RUN)
 
 const _m = new Matrix4()
 const _q = new Quaternion()
-const _qa = new Quaternion()
 const _p = new Vector3()
 const _s = new Vector3()
 const _v = new Vector3()
 const _look = new Vector3()
 const _want = new Vector3()
 const _wantLook = new Vector3()
-const _ax = new Vector3(1, 0, 0)
 const _ay = new Vector3(0, 1, 0)
-const _az = new Vector3(0, 0, 1)
-/** The camera's offset from the phone and where it looks (from the phone), both eased. */
+/** The camera's offset from the slinky and where it looks (from it), both eased. */
 const camOffset = new Vector3()
 const lookOffset = new Vector3()
+/** Where the slinky itself is, from the stair line, smoothed: what the camera frames. */
+const focusOffset = new Vector3()
+const _focus = new Vector3()
+const _toSlinky = new Vector3()
+/** How far the camera has drawn back to fit the flip in view (metres of arch past one step), eased. */
+let archReach = 0
 /** Stable vector for runtime.flightFocus (the scratch ones are reused mid-frame). */
-const phoneFocus = new Vector3()
+const slinkyFocus = new Vector3()
 
 /** The camera's field of view widens with speed, up to this much more. */
-const FOV_KICK = 14
-const SPEED_SHAKE = 0.06
-const HIT_SHAKE = 0.75
-const HIT_SHAKE_MS = 170
+const FOV_KICK = 12
+/** A small jolt as it lands on its last step (no shaking while it goes: it hides the slinky). */
+const LAND_SHAKE = 0.12
+const LAND_SHAKE_MS = 140
 
-/** At most one trophy popup this often; the trophies in between are summed into it. */
-const TROPHY_POPUP_MS = 160
+/**
+ * At most one trophy popup this often (longer on LOW); the trophies in between are summed
+ * into it. Each popup is outlined, gradient-filled text moved every frame - the DOM's
+ * dearest thing on a slow phone - so a fast drop shows a few big sums, not a stream.
+ */
+const TROPHY_POPUP_MS = 420
+const TROPHY_POPUP_MS_LOW = 750
 const TROPHY_POPUP = { iconUrl: iconUrl('trophy'), scale: 1.2 }
 
 const smoothstep = (a, b, x) => {
@@ -89,7 +93,7 @@ const smoothstep = (a, b, x) => {
 
 /**
  * Speed-line streaks, made once: alternately down the left and right of the view, each a
- * little thicker or longer than the next, and every third tinted with your phone's colour.
+ * little thicker or longer than the next, and every third tinted with your slinky's colour.
  */
 const streakState = (() => {
   const r = mulberry32(5)
@@ -102,8 +106,9 @@ const streakState = (() => {
     tinted: i % 3 === 0,
   }))
 })()
-const STREAKS_FROM = 20
-const STREAKS_FULL = 70
+/** Speed lines show from this many metres a second, fully by STREAKS_FULL. */
+const STREAKS_FROM = 25
+const STREAKS_FULL = 90
 const WHITE = new Color('#ffffff')
 const _tint = new Color()
 
@@ -158,106 +163,52 @@ function createTrophyGeometry() {
   return p.build()
 }
 
-/** White shattered-glass lines from a point near the screen's top, on a small canvas. */
-function createScreenCrackTexture() {
-  const canvas = document.createElement('canvas')
-  canvas.width = 128
-  canvas.height = 256
-  const g = canvas.getContext('2d')
-  const r = mulberry32(7)
-  const cx = 52
-  const cy = 92
-  g.strokeStyle = 'rgba(255,255,255,0.95)'
-  g.lineCap = 'round'
-  for (let i = 0; i < 11; i += 1) {
-    let a = (i / 11) * Math.PI * 2 + r() * 0.4
-    let x = cx
-    let y = cy
-    g.lineWidth = 3.2
-    g.beginPath()
-    g.moveTo(x, y)
-    const len = 50 + r() * 110
-    for (let d = 0; d < len; d += 12) {
-      a += (r() - 0.5) * 0.6
-      x += Math.cos(a) * 12
-      y += Math.sin(a) * 12
-      g.lineTo(x, y)
-    }
-    g.stroke()
-  }
-  // A ring of short cracks round the impact point.
-  g.lineWidth = 2
-  g.beginPath()
-  for (let i = 0; i <= 12; i += 1) {
-    const a = (i / 12) * Math.PI * 2
-    const rr = 14 + r() * 6
-    if (i === 0) g.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr)
-    else g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr)
-  }
-  g.stroke()
-  const texture = new CanvasTexture(canvas)
-  texture.colorSpace = SRGBColorSpace
-  texture.minFilter = LinearFilter
-  texture.generateMipmaps = false
-  return texture
-}
-
 /**
- * The falling phone: one merged mesh for the phone being dropped, rebuilt if that changes,
- * with a cracked-screen overlay on it that shows once it has smashed down onto its floor.
+ * Where the camera sits and looks, both from the slinky, in each part of the drop.
+ *
+ * A slinky flips in the plane of the stairs (an arch from one step down to the next), so a
+ * camera straight behind it sees each arch edge-on - just a bob. This one rides beside and
+ * above it, three-quarters on, over the right of the staircase: every arch shows in full,
+ * and the stairs ahead still run away into the view. Close while it's slow, so you watch
+ * every flip; pulling back and up as it speeds along.
  */
-function createPhoneMesh(id, crackTexture) {
-  const p = new PropBuilder()
-  addPhone(p, id, { scale: PHONE_SCALE })
-  const dims = phoneDims(id)
-  const mesh = asToyInstance(p.build(), sharedMaterials().toy)
-  mesh.matrixAutoUpdate = true
-  mesh.frustumCulled = false
-  mesh.visible = false
-  const crack = new Mesh(
-    new PlaneGeometry((dims.width - 0.06) * PHONE_SCALE, (dims.length - 0.08) * PHONE_SCALE),
-    new MeshBasicMaterial({ map: crackTexture, transparent: true, depthWrite: false }),
-  )
-  crack.rotation.x = -Math.PI / 2
-  crack.position.y = (dims.thickness / 2 + 0.03) * PHONE_SCALE
-  crack.visible = false
-  crack.name = 'screen-crack'
-  mesh.add(crack)
-  mesh.userData.crack = crack
-  return mesh
-}
-
-/** Where the camera sits (from the phone) and looks (from the phone) in each part of the drop. */
-function cameraAim(elapsed, outOffset, outLook) {
+function cameraAim(outOffset, outLook, zoom) {
   if (roll.phase === 'throw') {
-    // Over your shoulder at the edge, looking out and down at the hotel far below.
-    outOffset.set(1.4, 1.6, 5.2)
-    outLook.set(0, -18, -20)
+    // Over your shoulder at the top, looking down the stairs.
+    outOffset.set(1.6, 1.9, 4.8)
+    outLook.set(0, -4.5, -11)
   } else if (roll.phase === 'air') {
-    // Chasing it down through the sky: behind it at first, then above it, looking down.
-    const u = smoothstep(0, 1, (elapsed - T_RELEASE) / DROP_AIR)
-    outOffset.set(0.6 * (1 - u), 4 + 6.5 * u, 8 - 4.4 * u)
-    outLook.set(0, -3 - 2 * u, -3 * (1 - u))
-  } else if (roll.phase === 'tower') {
-    // Straight down through the hotel, just behind the phone so the camera comes through
-    // the holes it punches.
-    outOffset.set(0, 7.4, 2.1)
-    outLook.set(0, -1, -0.3)
+    // Swinging round beside it as it flies onto the top step.
+    outOffset.set(roll.lane > 0.5 ? -3.8 : 3.8, 2.6, 4)
+    outLook.set(0, -0.4, -1.6)
+  } else if (roll.phase === 'stairs') {
+    const f = smoothstep(6, 90, roll.speed)
+    // On the side of the staircase with more room (a slinky going down its right-hand lane
+    // is watched from the left), so the camera stays over the steps, clear of the hillside.
+    const side = roll.lane > 0.5 ? -1 : 1
+    // Clear of the steps behind (they climb half as fast as they run back), never past the kerb.
+    // Drawn back (zoom) so a long leap's whole arch fits, its far end not past the lens.
+    const back = (3 + 4.2 * f) * zoom
+    outOffset.set(side * (3.9 + 0.9 * f) * Math.min(1.25, zoom), back * (RISE / RUN) + (1.3 + 1.6 * f) * zoom, back)
+    // Aimed just past the slinky, so it sits mid-screen (clear of the bars along the bottom).
+    outLook.set(0, -0.1 - 0.7 * f, -0.7 - 4.3 * f)
   } else {
-    // Stopped: close over the phone as it slams down, then drawing back to the south to
-    // take in the room it wrecked - its north wall, the crater, the rubble.
+    // Stopped: round to the front side and in close, to see it bounce on its last step.
     const since = Math.max(0, (performance.now() - roll.landedAt) / 1000)
-    const u = smoothstep(0.4, 1.8, since)
-    outOffset.set(0, 5.6 + 3 * u, 3.2 + 4.6 * u)
-    outLook.set(0, 0.5 * u, -0.2 - 2.6 * u)
+    const u = smoothstep(0, 1.8, since)
+    const a = 0.85 + 0.45 * u
+    const r = 3.8 - 0.5 * u
+    const side = roll.lane > 0.5 ? -1 : 1
+    outOffset.set(side * Math.sin(a) * r, 1.7 + Math.max(0, Math.cos(a) * r) * (RISE / RUN), Math.cos(a) * r)
+    outLook.set(0, 0.15, -0.3)
   }
 }
 
 /**
- * Lazily loaded: everything below the cliff edge - the hotel and the city (Tower), the
- * falling phone, the debris, the trophies on the way down, the speed lines and the camera
- * while it falls. While nobody is dropping it still shows the hotel and the city far
- * below, which is what you see from the edge of the lobby.
+ * Lazily loaded: everything beyond the top of the stairs - the Great Staircase and its
+ * scenery (Stairs), the slinky going down it with its aura (Slinky), the trophies on the
+ * way, the speed lines and the camera while it goes. While nobody is dropping it still
+ * shows the stairs falling away down the mountain, which is what you see from the lobby.
  */
 export default function Roll() {
   const camera = useThree((s) => s.camera)
@@ -266,7 +217,6 @@ export default function Roll() {
   const rootRef = useRef(null)
   const trophyRef = useRef(null)
   const streakRef = useRef(null)
-  const phoneRef = useRef(null)
   const streakTintedFor = useRef(-1)
   const startedFor = useRef(0)
   const trophyTally = useRef({ next: TROPHY_FIRST, pending: 0, shownAt: 0 })
@@ -276,7 +226,6 @@ export default function Roll() {
   const motionBlur = useQuality((s) => s.settings.motionBlur)
   const antialias = useQuality((s) => s.antialias)
   const rolling = useGame((s) => Boolean(s.roll))
-  const equipped = useGame((s) => s.profile.equippedTire)
 
   const assets = useMemo(() => {
     const trophies = createToyInstances(createTrophyGeometry(), sharedMaterials().toy, MAX_TROPHIES)
@@ -296,30 +245,15 @@ export default function Roll() {
     return { trophies, streakMesh, streakMaterial }
   }, [])
 
-  // The phone mesh for whichever phone is being dropped (your equipped one).
-  const crackTexture = useMemo(() => createScreenCrackTexture(), [])
-  useEffect(() => () => crackTexture.dispose(), [crackTexture])
-  const phone = useMemo(() => createPhoneMesh(equipped, crackTexture), [equipped, crackTexture])
-  useEffect(
-    () => () => {
-      const crack = phone.userData.crack
-      crack.geometry.dispose()
-      crack.material.dispose()
-      phone.geometry.dispose()
-      phone.dispose()
-    },
-    [phone],
-  )
-
   // This module loads after the lobby is on screen; compile its shaders in the background
   // before showing it, so the first drop doesn't stall on them.
   useEffect(() => {
     const root = rootRef.current
     if (!root || import.meta.env.DEV) return undefined
     let cancelled = false
-    // compile() only gathers what's visible: the falling phone, its cracked screen and the
-    // effects all start hidden, so everything is shown for the gathering and hidden again
-    // straight after - otherwise their shaders compile mid-drop, the first time each shows.
+    // compile() only gathers what's visible: the slinky, its aura and the effects all
+    // start hidden, so everything is shown for the gathering and hidden again straight
+    // after - otherwise their shaders compile mid-drop, the first time each shows.
     root.visible = true
     const hidden = []
     root.traverse((object) => {
@@ -368,7 +302,9 @@ export default function Roll() {
         startedFor.current = roll.startedAt
         // Ease from wherever the lobby camera was.
         camOffset.copy(camera.position).sub(p)
-        lookOffset.set(0, 0, -10)
+        lookOffset.set(0, -4, -10)
+        focusOffset.set(0, 0, 0)
+        archReach = 0
         baseFov.current = camera.fov
         const tally = trophyTally.current
         tally.next = TROPHY_FIRST
@@ -376,65 +312,56 @@ export default function Roll() {
         tally.shownAt = 0
         zoneShown.current = -2
       }
-      speed = roll.speed
-      runtime.flightFocus = phoneFocus.copy(p)
+      speed = roll.speed * STAIR_LENGTH
+      runtime.flightFocus = slinkyFocus.copy(p)
       writeDistance(roll.meter)
-      // The floor's name as the phone comes into it.
-      const zi = roll.roofBroken ? roll.floor : -1
+      // The stage's name as the slinky reaches it, and its sky.
+      const zi = roll.inHand ? -1 : roll.stage
+      const stage = zi >= 0 ? zones()[zi] : null
       if (zi !== zoneShown.current) {
         zoneShown.current = zi
-        if (zi >= 0) writeZone(zi, zones()[zi].name, floorNameGradient(activeWorld(), zi))
+        if (stage) writeZone(zi, `STAGE ${zi + 1} · ${stage.name}`, stageNameGradient(stage.theme))
         else writeZone(-1, ' ', 'linear-gradient(180deg, #ffffff, #ffffff)')
       }
+      if (stage) blendSky(THEME_SKIES[stage.theme] ?? THEME_SKIES.meadow, 1 - Math.exp(-2.2 * delta), scene.fog)
 
-      // The wind, swelling with the fall, gone once it stops.
-      if (roll.phase === 'air' || roll.phase === 'tower') {
+      // The wind, swelling with the speed, gone once it stops.
+      if (roll.phase === 'stairs') {
         sfx.windStart()
-        sfx.windSet(Math.min(1, speed / 90), true, 0)
+        sfx.windSet(Math.min(1, speed / 120), true, 0)
       } else if (roll.landed) {
         sfx.windStop()
       }
 
-      // The phone itself, once it has left your hand.
-      const mesh = phoneRef.current
-      if (mesh) {
-        mesh.visible = !roll.inHand
-        // Its screen cracks as it smashes down onto its floor.
-        const crack = mesh.children[0]
-        if (crack) crack.visible = roll.landed
-        if (!roll.inHand) {
-          mesh.position.copy(p)
-          _q.setFromAxisAngle(_ay, roll.yaw)
-          _q.multiply(_qa.setFromAxisAngle(_ax, roll.tumble))
-          _q.multiply(_qa.setFromAxisAngle(_az, roll.tilt))
-          mesh.quaternion.copy(_q)
-        }
-      }
-
       if (runtime.camera.mode === 'roll') {
-        const elapsed = (now - roll.startedAt - roll.lag) / 1000
-        cameraAim(elapsed, _want, _wantLook)
-        // Quick to settle into each shot, quicker still once falling fast.
-        const k = 1 - Math.exp(-(roll.phase === 'throw' ? 5 : roll.phase === 'tower' ? 14 : 6) * delta)
+        // A flip leaping several steps is a long arch: draw back to fit it (a hoop needs no room).
+        const hoop = smoothstep(HOOP_FROM, HOOP_FULL, roll.speed)
+        const reach = roll.phase === 'stairs' ? Math.max(0, (roll.flipTo - roll.flipFrom - 1) * STAIR_LENGTH) * (1 - hoop) : 0
+        archReach += (reach - archReach) * (1 - Math.exp(-2.5 * delta))
+        cameraAim(_want, _wantLook, 1 + 0.11 * archReach)
+        const k = 1 - Math.exp(-(roll.phase === 'throw' ? 5 : roll.phase === 'stairs' ? 3.5 : 4) * delta)
         camOffset.lerp(_want, k)
         lookOffset.lerp(_wantLook, k)
+        // Framed on the slinky itself, not the stair line it's walking: smoothed (as an
+        // offset from the line, so it never lags however fast it goes), so the camera follows
+        // its flips without bobbing up and down with every one.
+        _toSlinky.copy(roll.slinkyCenter).sub(p)
+        focusOffset.lerp(_toSlinky, 1 - Math.exp(-6 * delta))
+        _focus.copy(p).add(focusOffset)
+        const sinceLand = roll.fellBackAt ? now - roll.fellBackAt : Infinity
+        const amp = sinceLand < LAND_SHAKE_MS * 3 ? LAND_SHAKE * Math.exp(-sinceLand / LAND_SHAKE_MS) : 0
+        camera.position.set(_focus.x + camOffset.x + (Math.random() - 0.5) * amp, _focus.y + camOffset.y + (Math.random() - 0.5) * amp, _focus.z + camOffset.z)
+        camera.lookAt(_look.copy(_focus).add(lookOffset))
         const sinceHit = now - roll.hitAt
-        const amp =
-          (roll.phase === 'air' || roll.phase === 'tower' ? Math.min(1, speed / 90) * SPEED_SHAKE : 0) +
-          (sinceHit < HIT_SHAKE_MS * 3 ? HIT_SHAKE * Math.exp(-sinceHit / HIT_SHAKE_MS) : 0)
-        camera.position.set(p.x + camOffset.x + (Math.random() - 0.5) * amp, p.y + camOffset.y + (Math.random() - 0.5) * amp, p.z + camOffset.z)
-        camera.lookAt(_look.copy(p).add(lookOffset))
-        // The view widens with speed, and punches wider for a moment on every smash.
-        const punch = sinceHit < 500 ? 6 * Math.exp(-sinceHit / 120) : 0
-        const fov = baseFov.current + punch + (roll.phase === 'air' || roll.phase === 'tower' ? Math.min(FOV_KICK, speed * 0.12) : roll.landed ? -4 : 0)
+        // The view widens with speed, and punches wider for a moment at every gate.
+        const punch = sinceHit < 500 ? 4 * Math.exp(-sinceHit / 120) : 0
+        const fov = baseFov.current + punch + (roll.phase === 'stairs' ? Math.min(FOV_KICK, speed * 0.1) : roll.landed ? -4 : 0)
         const lens = state.camera
         if (Math.abs(fov - lens.fov) > 0.05) {
           lens.fov += (fov - lens.fov) * (1 - Math.exp(-4 * delta))
           lens.updateProjectionMatrix()
         }
       }
-    } else if (phoneRef.current) {
-      phoneRef.current.visible = false
     }
     if (wasActive.current && !roll.active) {
       state.camera.fov = baseFov.current
@@ -448,28 +375,31 @@ export default function Roll() {
     const trophies = trophyRef.current
     if (trophies) {
       let count = 0
-      if (roll.active && roll.roofBroken) {
+      if (roll.active && !roll.inHand) {
         // Tally the ones just passed: the Wins came with the drop; this is the receipt.
         const tally = trophyTally.current
         while (tally.next <= Math.min(roll.meter, roll.distance)) {
           tally.pending += trophyValue(tally.next, activeWorld())
           tally.next += TROPHY_SPACING
         }
-        if (tally.pending > 0 && now - tally.shownAt >= TROPHY_POPUP_MS) {
+        if (tally.pending > 0 && now - tally.shownAt >= (settings.particles ? TROPHY_POPUP_MS : TROPHY_POPUP_MS_LOW)) {
           const multiplier = winsMultiplier(getGame().profile, Date.now())
           spawnScattered(`+${formatNumber(Math.round(tally.pending * multiplier))}`, TROPHY_POPUP)
           sfx.trophy()
           tally.pending = 0
           tally.shownAt = now
         }
-        // The next few still below the phone, spinning on its path.
+        // The next few still ahead, spinning over their steps. (Placed from the slinky,
+        // so the numbers stay small however far down it is.)
         const spin = now * 0.004
+        const origin = roll.position
+        trophies.position.copy(origin)
         for (let m = tally.next; m <= roll.distance && count < MAX_TROPHIES; m += TROPHY_SPACING) {
-          const y = yAtMeter(m, roll.distance, roll.end)
-          if (y < roll.position.y - 70) break
-          _p.set(roll.position.x, y + 0.5, roll.position.z)
+          if (m - roll.meter > 140) break
+          stepPoint(m, _p, roll.lane).sub(origin)
+          _p.y += 0.9 + 0.15 * Math.sin(spin * 2 + m)
           _q.setFromAxisAngle(_ay, spin + m)
-          _s.setScalar(1.6)
+          _s.setScalar(1.5)
           trophies.setMatrixAt(count, _m.compose(_p, _q, _s))
           count += 1
         }
@@ -479,16 +409,16 @@ export default function Roll() {
     }
 
     // --- Speed lines --------------------------------------------------------------
-    const falling = roll.active && (roll.phase === 'air' || roll.phase === 'tower')
-    writeSpeed(falling ? smoothstep(STREAKS_FROM, STREAKS_FULL * 1.5, speed) : 0, now)
+    const flying = roll.active && roll.phase === 'stairs'
+    writeSpeed(flying ? smoothstep(STREAKS_FROM, STREAKS_FULL * 1.5, speed) : 0, now)
     const lines = streakRef.current
     if (lines) {
-      if (!(falling && settings.speedLines && speed > STREAKS_FROM)) {
+      if (!(flying && settings.speedLines && speed > STREAKS_FROM)) {
         lines.count = 0
       } else {
         if (streakTintedFor.current !== roll.startedAt) {
           streakTintedFor.current = roll.startedAt
-          _tint.set(phoneTrail(roll.tireId)).lerp(WHITE, 0.35)
+          _tint.set(slinkyTrail(roll.tireId)).lerp(WHITE, 0.35)
           for (let i = 0; i < STREAKS; i += 1) lines.setColorAt(i, streakState[i].tinted ? _tint : WHITE)
           lines.instanceColor.needsUpdate = true
         }
@@ -496,12 +426,14 @@ export default function Roll() {
         lines.material.uniforms.uOpacity.value = smoothstep(STREAKS_FROM, STREAKS_FULL, speed)
         const travel = fast * delta * 0.6
         lines.count = STREAKS
+        // Round the camera (the mesh sits on it), so the numbers stay small.
+        lines.position.copy(camera.position)
         for (let i = 0; i < STREAKS; i += 1) {
           const st = streakState[i]
           st.z += travel
           if (st.z > 4) st.z -= 34
           _v.set(Math.cos(st.a) * st.r * 1.15, Math.sin(st.a) * st.r * 0.75, st.z - 4)
-          _v.applyQuaternion(camera.quaternion).add(camera.position)
+          _v.applyQuaternion(camera.quaternion)
           _q.copy(camera.quaternion)
           _s.set(st.width, st.width, (2 + fast * 0.02) * st.length)
           lines.setMatrixAt(i, _m.compose(_v, _q, _s))
@@ -513,10 +445,9 @@ export default function Roll() {
 
   return (
     <group ref={rootRef}>
-      <Tower />
-      <Debris />
+      <Stairs />
+      <Slinky />
       <FireBurst />
-      <primitive ref={phoneRef} object={phone} />
       <primitive ref={trophyRef} object={assets.trophies} />
       <primitive ref={streakRef} object={assets.streakMesh} />
       {rolling && motionBlur > 0 && <SpeedBlur samples={motionBlur} antialias={antialias} />}

@@ -6,32 +6,32 @@
  * Shared by client (display) and server (authority): both always agree on costs and
  * multipliers because they read the same table.
  *
- * The loop (Phone Plunge): practise throwing on the throw pads for SKILL -> walk to the DROP ZONE at the
- * cliff edge, charge the throw meter and fling your phone off the edge -> it falls through
- * the clouds onto the hotel far below, smashes its glass roof and then floor after floor
- * (more Skill smashes deeper, and every metre pays) -> Wins -> newer phones, eggs and
- * throw pads -> rebirth at max level for a bigger Skill multiplier and a higher cap ->
- * smash deeper still.
+ * The loop (Coil Cascade): drop your slinky down the practice stairs for POWER -> walk to
+ * the DROP ZONE at the top of the Great Staircase, charge the drop meter and let go -> your
+ * slinky flips down the stairs, step after step, faster and faster, through stage after
+ * themed stage (more Power goes further, and every stair pays) -> Wins -> better slinkies
+ * (each with its own aura), eggs and practice stairs -> rebirth at max level for a bigger
+ * Power multiplier and a higher cap -> go further still. Two worlds, sixty stages each.
  *
  * Inside the code the template's names stay (so saves and the server never change):
- * `health` is SKILL, a `tire` is a PHONE, a `pad` is a throw pad, a `roll` is a drop and a
- * `zone` is one floor of the hotel. Only what players see was renamed. How each phone
- * looks is client/src/game/phoneStyles.js.
+ * `health` is POWER, a `tire` is a SLINKY, a `pad` is a practice staircase, a `roll` is a
+ * drop and a `zone` is one stage of the staircase. Only what players see was renamed. How
+ * each slinky and its aura look is client/src/game/slinkyStyles.js.
  */
 
 // --- Health and levels --------------------------------------------------------------
 
 /**
- * Skill comes from throwing your phone - a click, a tap, THROW, or standing on a throw
- * pad, which throws by itself every TRAIN_INTERVAL - and nothing else (not walking): one
- * throw, one gain, more on a throw pad (PADS mult). The server takes at most one throw
- * every TOSS_COOLDOWN seconds; the client's throw (game/practice.js TOSS_TIME) takes a
+ * Power comes from practice drops - a click, a tap, TOSS, or standing on a practice
+ * staircase, which tosses by itself every TRAIN_INTERVAL - and nothing else (not walking):
+ * one toss, one gain, more on practice stairs (PADS mult). The server takes at most one
+ * toss every TOSS_COOLDOWN seconds; the client's toss (game/practice.js TOSS_TIME) takes a
  * little longer, so honest clicking never hits the limit.
  */
 export const TOSS_COOLDOWN = 0.35
 /**
- * Seconds between the throws a throw pad makes by itself while you stand on it; also the
- * pace of the Skill earned while you were away (logic.applyOfflineProgress).
+ * Seconds between the tosses practice stairs make by themselves while you stand on them;
+ * also the pace of the Power earned while you were away (logic.applyOfflineProgress).
  */
 export const TRAIN_INTERVAL = 0.6
 
@@ -39,7 +39,7 @@ export const TRAIN_INTERVAL = 0.6
  * Your level comes from your Health: reaching level L takes healthForLevel(L) Health.
  * Each level needs LEVEL_GROWTH_EARLY times the last at first, easing towards
  * LEVEL_GROWTH_LATE: early rebirths multiply your gains many times over (a new bar,
- * x2 from the rebirth itself, the next phone), later ones much less, and the levels
+ * x2 from the rebirth itself, the next slinky), later ones much less, and the levels
  * keep step so every rebirth takes a little longer than the one before.
  */
 export const LEVEL_BASE = 20
@@ -99,166 +99,175 @@ export function nextRebirthGift(rebirths) {
 /** Skipping straight to a rebirth costs this many max-level drops' worth of Wins. */
 export const REBIRTH_SKIP_ROLLS = 10
 
-// --- Training pads (throw pads) --------------------------------------------------
+// --- Training pads (practice stairs) ---------------------------------------------
 
 /**
- * Throw pads, south to north in world.js order. Standing on one you practise throwing
- * your phone down its lane at a target: a throw (a rep, and a Skill gain) every
- * TRAIN_INTERVAL. `rebirths` = rebirths needed; `product` = the SHOP
- * pass that unlocks it instead; `world` = the only world it works in (the beach
- * pads at the north end of the row work in Palm Beach only, and stand locked in
- * World 1 as a teaser).
+ * Practice stairs, south to north in world.js order. Standing on one you toss your
+ * slinky onto its little staircase and watch it flip down: a toss (a rep, and a Power
+ * gain) every TRAIN_INTERVAL. `rebirths` = rebirths needed; `product` = the SHOP pass that
+ * unlocks it instead; `world` = the only world it works in (the beach stairs at the north
+ * end of the row work in Palm Beach only, and stand locked in World 1 as a teaser).
  */
 export const PADS = [
-  { id: 'starter', name: 'Basic Throw Pad', mult: 1, rebirths: 0 },
-  { id: 'speed', name: 'Bouncy Throw Pad', mult: 2, rebirths: 1 },
-  { id: 'turbo', name: 'Turbo Throw Pad', mult: 4, rebirths: 2 },
-  { id: 'nitro', name: 'Steel Throw Pad', mult: 10, rebirths: 4 },
-  { id: 'rocket', name: 'Rocket Throw Pad', mult: 20, rebirths: 6 },
-  { id: 'diamond', name: 'Crystal Throw Pad', mult: 40, product: 'padVeryOp', tag: 'VERY OP!' },
-  { id: 'galaxy', name: 'Galaxy Throw Pad', mult: 100, product: 'padBest', tag: 'BEST OVERALL!' },
-  // Kept close to the Galaxy Throw Pad: every Skill multiplier here speeds up the whole
-  // late game (scripts/balance-sim.mjs) - the beach pads are milestones, not a jump.
-  { id: 'surf', name: 'Surf Throw Pad', mult: 115, rebirths: 10, world: 1 },
-  { id: 'tsunami', name: 'Tsunami Throw Pad', mult: 130, rebirths: 16, world: 1 },
+  { id: 'starter', name: 'Wooden Steps', mult: 1, rebirths: 0 },
+  { id: 'speed', name: 'Bouncy Steps', mult: 2, rebirths: 1 },
+  { id: 'turbo', name: 'Turbo Steps', mult: 4, rebirths: 2 },
+  { id: 'nitro', name: 'Steel Steps', mult: 10, rebirths: 4 },
+  { id: 'rocket', name: 'Rocket Steps', mult: 20, rebirths: 6 },
+  { id: 'diamond', name: 'Crystal Steps', mult: 40, product: 'padVeryOp', tag: 'VERY OP!' },
+  { id: 'galaxy', name: 'Galaxy Steps', mult: 100, product: 'padBest', tag: 'BEST OVERALL!' },
+  // Kept close to the Galaxy Steps: every Power multiplier here speeds up the whole late
+  // game (scripts/balance-sim.mjs) - the beach stairs are milestones, not a jump.
+  { id: 'surf', name: 'Surf Steps', mult: 115, rebirths: 10, world: 1 },
+  { id: 'tsunami', name: 'Tsunami Steps', mult: 130, rebirths: 16, world: 1 },
 ]
 
-// --- Phones (the template's tires) -------------------------------------------------
+// --- Slinkies (the template's tires) -----------------------------------------------
 
 /**
- * The phone you drop. `power` is the Skill every single gain is worth before multipliers
- * (the "+1" of the Button Phone); `cost` is in Wins; `rarity` (RARITIES) is shown on its
- * stand. Bought in order at the phone shop, they run through the history of the mobile
- * phone: an old button phone, a flip phone, a slider and a keyboard phone, the first
- * touch phones with their home buttons, then the notch, then the island - all the way up
- * to the 18 Pro Max. (No brand names: a published game must not use a real company's
- * trademarks.) About x2.6 power for x2.8-x3.3 the Wins each. The ids are the template's
- * (saves and the server key on them). How each one looks: client/src/game/phoneStyles.js.
+ * The slinky you drop. `power` is the Power every single gain is worth before
+ * multipliers (the "+1" of the Classic Slinky); `cost` is in Wins; `rarity` (RARITIES) is
+ * shown on its stand. Bought in order at the slinky shop: about x2.6 power for x2.8-x3.3
+ * the Wins each. The last twelve (`world: 1`) are sold in Palm Beach only - the reason to
+ * keep going once you're there. Every slinky has its own colours AND its own aura
+ * (client/src/game/slinkyStyles.js). The first ids are the template's (saves and the
+ * server key on them).
  */
 export const TIRES = [
-  { id: 'bicycle', name: 'Button Phone', power: 1, cost: 0, rarity: 'common' },
+  { id: 'bicycle', name: 'Classic Slinky', power: 1, cost: 0, rarity: 'common' },
   // Cheap enough to buy with the Wins from your very first drop.
-  { id: 'mountain', name: 'Flip Phone', power: 3, cost: 1, rarity: 'common' },
-  { id: 'wood', name: 'Slider Phone', power: 5, cost: 15, rarity: 'common' },
-  { id: 'stone', name: 'Keyboard Phone', power: 12, cost: 75, rarity: 'uncommon' },
-  { id: 'cookie', name: 'Touch Phone', power: 30, cost: 300, rarity: 'uncommon' },
-  { id: 'pizza', name: 'Phone 3G', power: 75, cost: 1200, rarity: 'rare' },
-  { id: 'donut', name: 'Phone 4', power: 200, cost: 4500, rarity: 'rare' },
-  { id: 'watermelon', name: 'Phone 5', power: 500, cost: 16000, rarity: 'rare' },
-  { id: 'monster', name: 'Phone 6 Plus', power: 1250, cost: 55000, rarity: 'epic' },
-  { id: 'mint', name: 'Phone 7', power: 3500, cost: 180000, rarity: 'epic' },
-  { id: 'silver', name: 'Phone 8', power: 9000, cost: 600000, rarity: 'epic' },
-  { id: 'ice', name: 'Phone X', power: 23000, cost: 2e6, rarity: 'epic' },
-  { id: 'gold', name: 'Phone XS Max', power: 60000, cost: 6e6, rarity: 'legendary' },
-  { id: 'lava', name: 'Phone 11 Pro', power: 155000, cost: 17e6, rarity: 'legendary' },
-  { id: 'platinum', name: 'Phone 12 Pro', power: 400000, cost: 48e6, rarity: 'legendary' },
-  { id: 'emerald', name: 'Phone 13 Pro Max', power: 1.05e6, cost: 135e6, rarity: 'legendary' },
-  { id: 'ruby', name: 'Phone 14 Pro', power: 2.7e6, cost: 380e6, rarity: 'mythic' },
-  { id: 'diamond', name: 'Phone 15 Pro Max', power: 7e6, cost: 1.05e9, rarity: 'mythic' },
-  { id: 'rainbow', name: 'Phone 16 Pro', power: 1.8e7, cost: 3e9, rarity: 'mythic' },
-  { id: 'unicorn', name: 'Phone 16 Pro Max', power: 4.8e7, cost: 8.5e9, rarity: 'mythic' },
-  { id: 'galaxy', name: 'Phone 17 Pro', power: 1.25e8, cost: 2.4e10, rarity: 'secret' },
-  { id: 'dragon', name: 'Phone 17 Pro Max', power: 3.3e8, cost: 6.8e10, rarity: 'secret' },
-  { id: 'cosmic', name: 'Phone 18 Pro', power: 8.6e8, cost: 1.9e11, rarity: 'secret' },
-  { id: 'infinity', name: 'Phone 18 Pro Max', power: 2.2e9, cost: 5.4e11, rarity: 'secret' },
+  { id: 'mountain', name: 'Bubblegum Slinky', power: 3, cost: 1, rarity: 'common' },
+  { id: 'wood', name: 'Lime Twist', power: 5, cost: 15, rarity: 'common' },
+  { id: 'stone', name: 'Ocean Coil', power: 12, cost: 75, rarity: 'uncommon' },
+  { id: 'cookie', name: 'Sunburst', power: 30, cost: 300, rarity: 'uncommon' },
+  { id: 'pizza', name: 'Rainbow Classic', power: 75, cost: 1200, rarity: 'rare' },
+  { id: 'donut', name: 'Candy Cane', power: 200, cost: 4500, rarity: 'rare' },
+  { id: 'watermelon', name: 'Frostbite', power: 500, cost: 16000, rarity: 'rare' },
+  { id: 'monster', name: 'Toxic Spring', power: 1250, cost: 55000, rarity: 'epic' },
+  { id: 'mint', name: 'Thunder Coil', power: 3500, cost: 180000, rarity: 'epic' },
+  { id: 'silver', name: 'Inferno', power: 9000, cost: 600000, rarity: 'epic' },
+  { id: 'ice', name: 'Sakura Spring', power: 23000, cost: 2e6, rarity: 'epic' },
+  { id: 'gold', name: 'Golden Coil', power: 60000, cost: 6e6, rarity: 'legendary' },
+  { id: 'lava', name: 'Shadow Coil', power: 155000, cost: 17e6, rarity: 'legendary' },
+  { id: 'platinum', name: 'Pixel Spring', power: 400000, cost: 48e6, rarity: 'legendary' },
+  { id: 'emerald', name: 'Emerald Coil', power: 1.05e6, cost: 135e6, rarity: 'legendary' },
+  { id: 'ruby', name: 'Ruby Heart', power: 2.7e6, cost: 380e6, rarity: 'mythic' },
+  { id: 'diamond', name: 'Diamond Coil', power: 7e6, cost: 1.05e9, rarity: 'mythic' },
+  { id: 'rainbow', name: 'Prism Spring', power: 1.8e7, cost: 3e9, rarity: 'mythic' },
+  { id: 'unicorn', name: 'Unicorn Dream', power: 4.8e7, cost: 8.5e9, rarity: 'mythic' },
+  { id: 'galaxy', name: 'Galaxy Coil', power: 1.25e8, cost: 2.4e10, rarity: 'secret' },
+  { id: 'dragon', name: 'Dragon Coil', power: 3.3e8, cost: 6.8e10, rarity: 'secret' },
+  { id: 'cosmic', name: 'Nebula Spring', power: 8.6e8, cost: 1.9e11, rarity: 'secret' },
+  { id: 'infinity', name: 'Infinity Coil', power: 2.2e9, cost: 5.4e11, rarity: 'secret' },
+  // Palm Beach exclusives.
+  { id: 'tide', name: 'Tidal Wave', power: 5.7e9, cost: 1.5e12, rarity: 'divine', world: 1 },
+  { id: 'coral', name: 'Coral Reef', power: 1.5e10, cost: 4.2e12, rarity: 'divine', world: 1 },
+  { id: 'sunset', name: 'Sunset Coil', power: 3.9e10, cost: 1.2e13, rarity: 'divine', world: 1 },
+  { id: 'pirate', name: 'Pirate Gold', power: 1e11, cost: 3.3e13, rarity: 'divine', world: 1 },
+  { id: 'kraken', name: 'Kraken Coil', power: 2.6e11, cost: 9.2e13, rarity: 'divine', world: 1 },
+  { id: 'magma', name: 'Magma Core', power: 6.8e11, cost: 2.6e14, rarity: 'divine', world: 1 },
+  { id: 'storm', name: 'Storm Bringer', power: 1.8e12, cost: 7.2e14, rarity: 'celestial', world: 1 },
+  { id: 'aurora', name: 'Aurora Coil', power: 4.6e12, cost: 2e15, rarity: 'celestial', world: 1 },
+  { id: 'phoenix', name: 'Phoenix Coil', power: 1.2e13, cost: 5.6e15, rarity: 'celestial', world: 1 },
+  { id: 'celestial', name: 'Celestial', power: 3.1e13, cost: 1.6e16, rarity: 'celestial', world: 1 },
+  { id: 'blackhole', name: 'Black Hole', power: 8e13, cost: 4.4e16, rarity: 'celestial', world: 1 },
+  { id: 'omega', name: 'Omega Coil', power: 2.1e14, cost: 1.2e17, rarity: 'celestial', world: 1 },
 ]
 
 // --- Dropping (the template's rolls) -----------------------------------------------
 
 /**
- * Depths are metres below the edge you throw from. The hotel's glass roof is DROP_ROOF
- * metres down: every drop falls that far through the clouds first, smashes the glass and
- * lands somewhere inside. Floor `i` of the hotel (FLOORS / ZONES) starts at `start`
- * metres; the glass roof is the top of floor 0.
+ * Distances are counted in stairs down the Great Staircase from the top step (the edge of
+ * the DROP ZONE). DROP_ROOF is where counting starts: the very first step.
  */
-export const DROP_ROOF = 300
+export const DROP_ROOF = 0
 
 /**
- * How deep a drop goes (in metres): 0 Skill still smashes ROLL_BASE metres (through the
- * roof into the first floor), and each floor is reached with the Skill in its `wall`,
- * less WALL_MARGIN; in between, depth follows Skill (in log terms) from one floor's top
- * to the next. So the floors' `wall` Skill sets the pace. See logic.rollReach.
+ * How far a drop goes (in stairs): 0 Power still goes ROLL_BASE stairs, and each stage is
+ * reached with the Power in its `wall`, less WALL_MARGIN; in between, distance follows
+ * Power (in log terms) from one stage's first step to the next. So the stages' `wall`
+ * Power sets the pace. See logic.rollReach.
  */
 export const ROLL_BASE = DROP_ROOF + 60
 export const ROLL_H0 = 50
-/** A floor's `wall` is this many times the Skill that just reaches its top. */
+/** A stage's `wall` is this many times the Power that just reaches its first step. */
 export const WALL_MARGIN = 1.3
 
-/** Room themes (client/src/game/roll/roomThemes.js builds each one's furniture). */
-export const ROOM_THEMES = ['pool', 'lounge', 'bedroom', 'bathroom', 'kitchen', 'dining', 'library', 'gym', 'arcade', 'cinema', 'spa', 'ballroom', 'office', 'music', 'kids', 'garden', 'laundry', 'aquarium', 'art', 'vault']
+/** The stages' looks (client/src/game/roll/stageThemes.js builds each one's scenery). */
+export const ROOM_THEMES = ['meadow', 'beach', 'snow', 'desert', 'autumn', 'savanna', 'candy', 'volcano', 'jungle', 'crystal', 'sakura', 'mushroom', 'reef', 'neon', 'clouds', 'rainbow', 'moon', 'aurora', 'space', 'cosmic']
+export const STAGE_THEMES = ROOM_THEMES
 
 /**
- * The hotel's sixty floors, top to bottom: [id, name, room theme, top (metres below the
- * roof), wall, winsPerMeter, smash, discover]. Each floor is a stretch of depth a little
- * longer than the one above (100 m, 106 m, 112 m ... about 450 m). The first twenty are
- * the hotel proper, the next twenty its deluxe floors, the last twenty its secret
- * basement levels. `wall` = the Skill that paces how deep a drop smashes (see
- * ROLL_BASE); each about twice the last. `winsPerMeter` pays for every metre smashed
- * through on the floor - the deeper, the more each metre pays - and `discover` is a
- * one-off prize the first time you ever reach the floor. `smash` is left over from the
+ * The Great Staircase's sixty stages, top to bottom: [id, name, look, first step, wall,
+ * winsPerMeter, smash, discover]. Each stage is a flight of stairs a little longer than the
+ * one before (100 stairs, 106, 112 ... about 440). The twenty looks come round three
+ * times, each time under a new name and deeper down. `wall` = the Power that paces how far
+ * a drop goes (see ROLL_BASE); each about twice the last. `winsPerMeter` pays for every
+ * stair gone down in the stage - the further, the more each stair pays - and `discover` is
+ * a one-off prize the first time you ever reach the stage. `smash` is left over from the
  * template and no longer paid. Numbers from scripts/gen-stages.py.
  */
 const FLOOR_TABLE = [
-  ['sunroom-pool', 'Sunroom Pool', 'pool', 0, 0, 0.006, 0, 0],
-  ['sky-lounge', 'Sky Lounge', 'lounge', 100, 11, 0.0072, 2, 5],
-  ['starlight-suite', 'Starlight Suite', 'bedroom', 200, 21, 0.00984, 3, 7],
-  ['marble-bathroom', 'Marble Bathroom', 'bathroom', 306, 41, 0.0135, 4, 9],
-  ['chef-kitchen', 'Chef Kitchen', 'kitchen', 418, 79, 0.0185, 5, 13],
-  ['grand-dining-hall', 'Grand Dining Hall', 'dining', 536, 150, 0.0255, 7, 18],
-  ['quiet-library', 'Quiet Library', 'library', 660, 300, 0.0351, 10, 24],
-  ['fitness-club', 'Fitness Club', 'gym', 790, 590, 0.0486, 13, 34],
-  ['pixel-arcade', 'Pixel Arcade', 'arcade', 926, 1200, 0.0673, 19, 47],
-  ['movie-theater', 'Movie Theater', 'cinema', 1068, 2300, 0.0934, 26, 65],
-  ['lotus-spa', 'Lotus Spa', 'spa', 1216, 4600, 0.13, 36, 90],
-  ['crystal-ballroom', 'Crystal Ballroom', 'ballroom', 1370, 9200, 0.181, 50, 130],
-  ['board-room', 'Board Room', 'office', 1530, 18000, 0.253, 70, 180],
-  ['music-studio', 'Music Studio', 'music', 1696, 37000, 0.355, 99, 250],
-  ['kids-club', 'Kids Club', 'kids', 1868, 75000, 0.498, 140, 350],
-  ['indoor-garden', 'Indoor Garden', 'garden', 2046, 150000, 0.7, 190, 490],
-  ['laundry-room', 'Laundry Room', 'laundry', 2230, 310000, 0.987, 270, 690],
-  ['shark-aquarium', 'Shark Aquarium', 'aquarium', 2420, 640000, 1.39, 390, 970],
-  ['art-gallery', 'Art Gallery', 'art', 2616, 1.3e6, 1.97, 550, 1400],
-  ['hotel-vault', 'Hotel Vault', 'vault', 2818, 2.7e6, 2.8, 780, 1900],
-  ['lagoon-pool', 'Lagoon Pool', 'pool', 3026, 5.7e6, 3.98, 1100, 2800],
-  ['velvet-lounge', 'Velvet Lounge', 'lounge', 3240, 1.2e7, 5.66, 1600, 3900],
-  ['honeymoon-suite', 'Honeymoon Suite', 'bedroom', 3460, 2.5e7, 8.08, 2200, 5600],
-  ['golden-bathroom', 'Golden Bathroom', 'bathroom', 3686, 5.3e7, 11.6, 3200, 8000],
-  ['pastry-kitchen', 'Pastry Kitchen', 'kitchen', 3918, 1.1e8, 16.6, 4600, 12000],
-  ['banquet-hall', 'Banquet Hall', 'dining', 4156, 2.4e8, 23.8, 6600, 17000],
-  ['ancient-archive', 'Ancient Archive', 'library', 4400, 5.1e8, 34.2, 9500, 24000],
-  ['boxing-gym', 'Boxing Gym', 'gym', 4650, 1.1e9, 49.3, 14000, 34000],
-  ['retro-arcade', 'Retro Arcade', 'arcade', 4906, 2.3e9, 71.3, 20000, 50000],
-  ['giant-screen-theater', 'Giant Screen Theater', 'cinema', 5168, 5e9, 103, 29000, 72000],
-  ['hot-spring-spa', 'Hot Spring Spa', 'spa', 5436, 1.1e10, 150, 42000, 100000],
-  ['disco-ballroom', 'Disco Ballroom', 'ballroom', 5710, 2.4e10, 218, 60000, 150000],
-  ['tech-lab', 'Tech Lab', 'office', 5990, 5.2e10, 317, 88000, 220000],
-  ['rock-stage', 'Rock Stage', 'music', 6276, 1.1e11, 462, 130000, 320000],
-  ['toy-room', 'Toy Room', 'kids', 6568, 2.5e11, 676, 190000, 470000],
-  ['jungle-atrium', 'Jungle Atrium', 'garden', 6866, 5.6e11, 990, 270000, 690000],
-  ['steam-laundry', 'Steam Laundry', 'laundry', 7170, 1.2e12, 1450, 400000, 1e6],
-  ['jellyfish-tank', 'Jellyfish Tank', 'aquarium', 7480, 2.8e12, 2140, 590000, 1.5e6],
-  ['sculpture-hall', 'Sculpture Hall', 'art', 7796, 6.2e12, 3150, 870000, 2.2e6],
-  ['diamond-vault', 'Diamond Vault', 'vault', 8118, 1.4e13, 4650, 1.3e6, 3.2e6],
-  ['neon-pool', 'Neon Pool', 'pool', 8446, 3.2e13, 6870, 1.9e6, 4.8e6],
-  ['night-club', 'Night Club', 'lounge', 8780, 7.2e13, 10200, 2.8e6, 7.1e6],
-  ['king-chamber', 'King Chamber', 'bedroom', 9120, 1.6e14, 15100, 4.2e6, 1e7],
-  ['crystal-washroom', 'Crystal Washroom', 'bathroom', 9466, 3.7e14, 22500, 6.2e6, 1.6e7],
-  ['robot-kitchen', 'Robot Kitchen', 'kitchen', 9818, 8.6e14, 33500, 9.3e6, 2.3e7],
-  ['feast-hall', 'Feast Hall', 'dining', 10176, 2e15, 50000, 1.4e7, 3.5e7],
-  ['wizard-library', 'Wizard Library', 'library', 10540, 4.6e15, 74800, 2.1e7, 5.2e7],
-  ['titan-gym', 'Titan Gym', 'gym', 10910, 1.1e16, 112000, 3.1e7, 7.8e7],
-  ['mega-arcade', 'Mega Arcade', 'arcade', 11286, 2.5e16, 168000, 4.7e7, 1.2e8],
-  ['space-cinema', 'Space Cinema', 'cinema', 11668, 5.8e16, 253000, 7e7, 1.8e8],
-  ['lava-spa', 'Lava Spa', 'spa', 12056, 1.4e17, 382000, 1.1e8, 2.7e8],
-  ['galaxy-ballroom', 'Galaxy Ballroom', 'ballroom', 12450, 3.2e17, 576000, 1.6e8, 4e8],
-  ['control-room', 'Control Room', 'office', 12850, 7.6e17, 872000, 2.4e8, 6.1e8],
-  ['laser-studio', 'Laser Studio', 'music', 13256, 1.8e18, 1300000, 3.7e8, 9.2e8],
-  ['candy-playroom', 'Candy Playroom', 'kids', 13668, 4.3e18, 2000000, 5.6e8, 1.4e9],
-  ['mushroom-garden', 'Mushroom Garden', 'garden', 14086, 1e19, 3000000, 8.5e8, 2.1e9],
-  ['slime-laundry', 'Slime Laundry', 'laundry', 14510, 2.5e19, 4700000, 1.3e9, 3.2e9],
-  ['deep-sea-tank', 'Deep Sea Tank', 'aquarium', 14940, 6e19, 7100000, 2e9, 4.9e9],
-  ['treasure-gallery', 'Treasure Gallery', 'art', 15376, 1.5e20, 11000000, 3e9, 7.5e9],
-  ['core-vault', 'Core Vault', 'vault', 15818, 3.5e20, 17000000, 4.6e9, 1.2e10],
+  ['grass-hills', 'Grass Hills', 'meadow', 0, 0, 0.006, 0, 0],
+  ['palm-beach', 'Palm Beach', 'beach', 100, 11, 0.0072, 2, 5],
+  ['snowy-peaks', 'Snowy Peaks', 'snow', 200, 21, 0.00984, 3, 7],
+  ['cactus-canyon', 'Cactus Canyon', 'desert', 306, 41, 0.0135, 4, 9],
+  ['autumn-woods', 'Autumn Woods', 'autumn', 418, 79, 0.0185, 5, 13],
+  ['savanna', 'Savanna', 'savanna', 536, 150, 0.0255, 7, 18],
+  ['candy-land', 'Candy Land', 'candy', 660, 300, 0.0351, 10, 24],
+  ['volcano', 'Volcano', 'volcano', 790, 590, 0.0486, 13, 34],
+  ['jungle-falls', 'Jungle Falls', 'jungle', 926, 1200, 0.0673, 19, 47],
+  ['crystal-caves', 'Crystal Caves', 'crystal', 1068, 2300, 0.0934, 26, 65],
+  ['sakura-garden', 'Sakura Garden', 'sakura', 1216, 4600, 0.13, 36, 90],
+  ['mushroom-forest', 'Mushroom Forest', 'mushroom', 1370, 9200, 0.181, 50, 130],
+  ['coral-reef', 'Coral Reef', 'reef', 1530, 18000, 0.253, 70, 180],
+  ['neon-city', 'Neon City', 'neon', 1696, 37000, 0.355, 99, 250],
+  ['cloud-kingdom', 'Cloud Kingdom', 'clouds', 1868, 75000, 0.498, 140, 350],
+  ['rainbow-road', 'Rainbow Road', 'rainbow', 2046, 150000, 0.7, 190, 490],
+  ['moon-base', 'Moon Base', 'moon', 2230, 310000, 0.987, 270, 690],
+  ['aurora-ice', 'Aurora Ice', 'aurora', 2420, 640000, 1.39, 390, 970],
+  ['deep-space', 'Deep Space', 'space', 2616, 1.3e6, 1.97, 550, 1400],
+  ['cosmic-void', 'Cosmic Void', 'cosmic', 2818, 2.7e6, 2.8, 780, 1900],
+  ['flower-fields', 'Flower Fields', 'meadow', 3026, 5.7e6, 3.98, 1100, 2800],
+  ['sunny-shores', 'Sunny Shores', 'beach', 3240, 1.2e7, 5.66, 1600, 3900],
+  ['frozen-lake', 'Frozen Lake', 'snow', 3460, 2.5e7, 8.08, 2200, 5600],
+  ['dune-sea', 'Dune Sea', 'desert', 3686, 5.3e7, 11.6, 3200, 8000],
+  ['maple-grove', 'Maple Grove', 'autumn', 3918, 1.1e8, 16.6, 4600, 12000],
+  ['safari-plains', 'Safari Plains', 'savanna', 4156, 2.4e8, 23.8, 6600, 17000],
+  ['sweet-valley', 'Sweet Valley', 'candy', 4400, 5.1e8, 34.2, 9500, 24000],
+  ['magma-falls', 'Magma Falls', 'volcano', 4650, 1.1e9, 49.3, 14000, 34000],
+  ['temple-ruins', 'Temple Ruins', 'jungle', 4906, 2.3e9, 71.3, 20000, 50000],
+  ['gem-mines', 'Gem Mines', 'crystal', 5168, 5e9, 103, 29000, 72000],
+  ['lantern-path', 'Lantern Path', 'sakura', 5436, 1.1e10, 150, 42000, 100000],
+  ['fungi-hollow', 'Fungi Hollow', 'mushroom', 5710, 2.4e10, 218, 60000, 150000],
+  ['kelp-forest', 'Kelp Forest', 'reef', 5990, 5.2e10, 317, 88000, 220000],
+  ['arcade-avenue', 'Arcade Avenue', 'neon', 6276, 1.1e11, 462, 130000, 320000],
+  ['sky-castle', 'Sky Castle', 'clouds', 6568, 2.5e11, 676, 190000, 470000],
+  ['prism-path', 'Prism Path', 'rainbow', 6866, 5.6e11, 990, 270000, 690000],
+  ['lunar-craters', 'Lunar Craters', 'moon', 7170, 1.2e12, 1450, 400000, 1e6],
+  ['northern-lights', 'Northern Lights', 'aurora', 7480, 2.8e12, 2140, 590000, 1.5e6],
+  ['galaxy-rift', 'Galaxy Rift', 'space', 7796, 6.2e12, 3150, 870000, 2.2e6],
+  ['star-forge', 'Star Forge', 'cosmic', 8118, 1.4e13, 4650, 1.3e6, 3.2e6],
+  ['sunflower-hills', 'Sunflower Hills', 'meadow', 8446, 3.2e13, 6870, 1.9e6, 4.8e6],
+  ['lagoon-bay', 'Lagoon Bay', 'beach', 8780, 7.2e13, 10200, 2.8e6, 7.1e6],
+  ['yeti-mountain', 'Yeti Mountain', 'snow', 9120, 1.6e14, 15100, 4.2e6, 1e7],
+  ['golden-oasis', 'Golden Oasis', 'desert', 9466, 3.7e14, 22500, 6.2e6, 1.6e7],
+  ['harvest-woods', 'Harvest Woods', 'autumn', 9818, 8.6e14, 33500, 9.3e6, 2.3e7],
+  ['lion-rock', 'Lion Rock', 'savanna', 10176, 2e15, 50000, 1.4e7, 3.5e7],
+  ['cupcake-kingdom', 'Cupcake Kingdom', 'candy', 10540, 4.6e15, 74800, 2.1e7, 5.2e7],
+  ['inferno-peak', 'Inferno Peak', 'volcano', 10910, 1.1e16, 112000, 3.1e7, 7.8e7],
+  ['lost-jungle', 'Lost Jungle', 'jungle', 11286, 2.5e16, 168000, 4.7e7, 1.2e8],
+  ['diamond-depths', 'Diamond Depths', 'crystal', 11668, 5.8e16, 253000, 7e7, 1.8e8],
+  ['spirit-garden', 'Spirit Garden', 'sakura', 12056, 1.4e17, 382000, 1.1e8, 2.7e8],
+  ['glowcap-grotto', 'Glowcap Grotto', 'mushroom', 12450, 3.2e17, 576000, 1.6e8, 4e8],
+  ['atlantis', 'Atlantis', 'reef', 12850, 7.6e17, 872000, 2.4e8, 6.1e8],
+  ['cyber-tower', 'Cyber Tower', 'neon', 13256, 1.8e18, 1300000, 3.7e8, 9.2e8],
+  ['heaven-gate', 'Heaven Gate', 'clouds', 13668, 4.3e18, 2000000, 5.6e8, 1.4e9],
+  ['unicorn-trail', 'Unicorn Trail', 'rainbow', 14086, 1e19, 3000000, 8.5e8, 2.1e9],
+  ['red-planet', 'Red Planet', 'moon', 14510, 2.5e19, 4700000, 1.3e9, 3.2e9],
+  ['comet-ice', 'Comet Ice', 'aurora', 14940, 6e19, 7100000, 2e9, 4.9e9],
+  ['nebula', 'Nebula', 'space', 15376, 1.5e20, 11000000, 3e9, 7.5e9],
+  ['the-beyond', 'The Beyond', 'cosmic', 15818, 3.5e20, 17000000, 4.6e9, 1.2e10],
 ]
 
 export const ZONES = FLOOR_TABLE.map(([id, name, theme, start, wall, winsPerMeter, smash, discover]) => ({
@@ -273,53 +282,63 @@ export const ZONES = FLOOR_TABLE.map(([id, name, theme, start, wall, winsPerMete
 }))
 /** The same table by its game name. */
 export const FLOORS = ZONES
+export const STAGES = ZONES
 
-/** Wins pickups down the hotel: the first 40 m under the roof, then every 80 m. */
+/** Trophies on the stairs: the first 40 stairs down, then every 80. */
 export const TROPHY_FIRST = DROP_ROOF + 40
 export const TROPHY_SPACING = 80
-/** A trophy is worth this many metres of its zone's Wins (at least 1). */
+/** A trophy is worth this many stairs of its stage's Wins (at least 1). */
 export const TROPHY_METERS = 80
 
 /**
- * Seconds from letting go of the DROP button to the phone leaving your hand: the throw's
+ * Seconds from letting go of the DROP button to the slinky leaving your hand: the toss's
  * swing. (The charge before it is yours: you hold for as long as you like, and the server
  * only hears about the release.)
  */
 export const ROLL_LAUNCH = 0.55
-/** Seconds the phone falls through the sky, from your hand to the hotel's glass roof. */
-export const DROP_AIR = 2.4
-/** Seconds the phone takes to bounce and settle once it stops on a floor. */
-export const DROP_SETTLE = 0.6
-/** Seconds smashing down through the hotel for a drop `below` metres under the roof. */
-export const towerDuration = (below) => 0.8 + 1.7 * Math.log(1 + Math.max(0, below) / 60)
+/** Seconds the slinky flies from your hand onto the top step. */
+export const DROP_AIR = 0.45
 /**
- * Seconds a drop to depth `distance` takes: the throw, the fall to the roof, smashing
- * down floor by floor and settling. Logarithmic: deep drops stay short.
+ * Seconds the slinky takes to stop on its last step: it starts to flip on over the edge to
+ * the next one, teeters there - SO CLOSE! - falls back and wobbles still.
  */
-export const rollDuration = (distance) => ROLL_LAUNCH + DROP_AIR + towerDuration(distance - DROP_ROOF) + DROP_SETTLE
-/** The result popup after the phone stops, before you're back at the drop zone. */
+export const DROP_SETTLE = 1.6
+/**
+ * Seconds flipping down the stairs for a drop of `stairs`: logarithmic, so a drop of a
+ * few dozen stairs takes about three seconds and one of twenty thousand under fifteen -
+ * the slinky leaps further with every flip as it picks up speed.
+ */
+export const stairsDuration = (stairs) => 0.55 + 1.72 * Math.log(1 + Math.max(0, stairs) / 16)
+/** The template's name for it. */
+export const towerDuration = stairsDuration
+/**
+ * Seconds a drop of `distance` stairs takes: the toss, the hop onto the top step, flipping
+ * down and settling.
+ */
+export const rollDuration = (distance) => ROLL_LAUNCH + DROP_AIR + stairsDuration(distance - DROP_ROOF) + DROP_SETTLE
+/** The result popup after the slinky stops, before you're back at the drop zone. */
 export const ROLL_RECOVERY = 2.2
 
 /**
- * The throw meter. Stand in the DROP ZONE and hold DROP (or E): the meter charges up, and
+ * The drop meter. Stand in the DROP ZONE and hold DROP (or E): the meter charges up, and
  * once full it wobbles: it bounces off the top and back, again and again (TWANG_PERIOD a
- * bounce, dipping TWANG_DEPTH). Let go to throw. `accuracy` is how full the meter was when
+ * bounce, dipping TWANG_DEPTH). Let go to drop. `accuracy` is how full the meter was when
  * you let go: 1 at the very top of a bounce. The grade it lands in decides the drop, each
- * grade clearly apart from the next: how deep it smashes (`reach`, a share of the depth
- * under the roof your Skill alone would reach - half for a WEAK throw, half as deep again
- * for a PERFECT one) and how many Wins it pays (`bonus`). Auto Drop skips the meter: a
- * plain x1 drop, between GOOD and GREAT.
+ * grade clearly apart from the next: how far it goes (`reach`, a share of the distance your
+ * Power alone would reach - half for a WEAK drop, half as far again for a PERFECT one) and
+ * how many Wins it pays (`bonus`). Auto Drop skips the meter: a plain x1 drop, between
+ * GOOD and GREAT.
  *
- * Wins are the Skill's worth times `bonus` - not paid by the metres the grade adds: late
- * in the game each floor pays ~1.4 times the last, so paying for half as deep again would
+ * Wins are the Power's worth times `bonus` - not paid by the stairs the grade adds: late
+ * in the game each stage pays ~1.4 times the last, so paying for half as far again would
  * multiply a PERFECT drop's Wins dozens of times over (logic.applyRoll).
  */
-/** Seconds the throw meter takes to charge from empty to full. */
+/** Seconds the drop meter takes to charge from empty to full. */
 export const CHARGE_TIME = 0.9
 /**
  * Seconds per wobble at full charge, and how far down the meter each one dips. The
  * bounce is sharp at the top (|sin|), so the PERFECT moment is ~0.1 s each time: a real
- * test of timing, still fair on a phone, and a throw let go at full charge is never
+ * test of timing, still fair on a phone, and a drop let go at full charge is never
  * worse than GOOD.
  */
 export const TWANG_PERIOD = 0.75
@@ -332,18 +351,18 @@ export const twangAt = (seconds) => 1 - TWANG_DEPTH * Math.abs(Math.sin((Math.PI
  * the top within a grade, and a big step up to the next.
  */
 export const HIT_GRADES = [
-  { id: 'perfect', min: 0.88, reach: [1.4, 1.5], bonus: 1.6, label: 'PERFECT THROW!' },
-  { id: 'great', min: 0.7, reach: [1.1, 1.2], bonus: 1.25, label: 'GREAT THROW!' },
-  { id: 'good', min: 0.4, reach: [0.8, 0.9], bonus: 1, label: 'GOOD THROW' },
-  { id: 'weak', min: 0, reach: [0.5, 0.6], bonus: 0.75, label: 'WEAK THROW...' },
+  { id: 'perfect', min: 0.88, reach: [1.4, 1.5], bonus: 1.6, label: 'PERFECT DROP!' },
+  { id: 'great', min: 0.7, reach: [1.1, 1.2], bonus: 1.25, label: 'GREAT DROP!' },
+  { id: 'good', min: 0.4, reach: [0.8, 0.9], bonus: 1, label: 'GOOD DROP' },
+  { id: 'weak', min: 0, reach: [0.5, 0.6], bonus: 0.75, label: 'WEAK DROP...' },
 ]
 const clampAccuracy = (accuracy) => Math.min(1, Math.max(0, accuracy))
 /** The grade for a meter `accuracy` (0-1), or null for a drop without the meter. */
 export const hitGrade = (accuracy) => (Number.isFinite(accuracy) ? HIT_GRADES.find((g) => clampAccuracy(accuracy) >= g.min) : null)
 /**
- * How deep a throw at meter `accuracy` smashes, as a share of the depth under the roof
- * your Skill alone would reach: 0.5 barely charged, 1.5 at the top of a wobble, in a
- * clear step per grade; 1 for a drop without the meter.
+ * How far a drop at meter `accuracy` goes, as a share of the distance your Power alone
+ * would reach: 0.5 barely charged, 1.5 at the top of a wobble, in a clear step per grade;
+ * 1 for a drop without the meter.
  */
 export function hitReach(accuracy) {
   const grade = hitGrade(accuracy)
@@ -364,9 +383,12 @@ export const RARITIES = {
   legendary: { name: 'Legendary', color: '#ffc41f', order: 4 },
   mythic: { name: 'Mythic', color: '#ff3b6b', order: 5 },
   secret: { name: 'Secret', color: '#ff5bd8', order: 6 },
+  // The Palm Beach slinkies.
+  divine: { name: 'Divine', color: '#fff27a', order: 7 },
+  celestial: { name: 'Celestial', color: '#7af7ff', order: 8 },
 }
 
-/** `mult` multiplies Skill gains. Equipped pets stack additively (see logic.js). */
+/** `mult` multiplies Power gains. Equipped pets stack additively (see logic.js). */
 export const PETS = {
   cat: { name: 'Cat', rarity: 'common', mult: 1.1 },
   dog: { name: 'Dog', rarity: 'common', mult: 1.15 },
@@ -423,7 +445,7 @@ export const MULTI_HATCH = 3
 export const POTION_DURATION_MS = 5 * 60 * 1000
 
 export const ITEMS = {
-  potionHealth: { name: 'x2 Skill Potion', kind: 'potion', boost: 'health', durationMs: POTION_DURATION_MS },
+  potionHealth: { name: 'x2 Power Potion', kind: 'potion', boost: 'health', durationMs: POTION_DURATION_MS },
   potionWins: { name: 'x2 Wins Potion', kind: 'potion', boost: 'wins', durationMs: POTION_DURATION_MS },
   eggMeadow: { name: 'Grass Egg', kind: 'egg', egg: 'meadow' },
   eggSunset: { name: 'Sunset Egg', kind: 'egg', egg: 'sunset' },
@@ -436,9 +458,9 @@ export const DAILY_INTERVAL_MS = 24 * 60 * 60 * 1000
 export const DAILY_REWARDS = [
   { label: 'x2 Wins', icon: 'potionWins', sub: '5m', grant: { item: 'potionWins' } },
   { label: 'Dragon', icon: 'pet:dragon', sub: 'x1', grant: { pet: 'dragon' } },
-  { label: 'x2 Skill', icon: 'potionHealth', sub: '5m', grant: { item: 'potionHealth' } },
+  { label: 'x2 Power', icon: 'potionHealth', sub: '5m', grant: { item: 'potionHealth' } },
   { label: 'Unicorn Egg', icon: 'egg:unicorn', sub: 'x1', grant: { item: 'eggUnicorn' } },
-  { label: 'x2 Skill', icon: 'potionHealth', sub: '5m', grant: { item: 'potionHealth' } },
+  { label: 'x2 Power', icon: 'potionHealth', sub: '5m', grant: { item: 'potionHealth' } },
   { label: 'x2 Wins', icon: 'potionWins', sub: '5m', grant: { item: 'potionWins' } },
   { label: 'Volcano Egg', icon: 'egg:volcano', sub: 'x1', grant: { item: 'eggVolcano' } },
 ]
@@ -449,12 +471,12 @@ export const DAILY_REWARDS = [
  */
 export const PLAYTIME_REWARDS = [
   { minutes: 3, label: '+10 Wins', icon: 'trophy', grant: { wins: 10 } },
-  { minutes: 8, label: 'x2 Skill', icon: 'potionHealth', grant: { item: 'potionHealth' } },
+  { minutes: 8, label: 'x2 Power', icon: 'potionHealth', grant: { item: 'potionHealth' } },
   { minutes: 15, label: 'Grass Egg', icon: 'egg:meadow', grant: { item: 'eggMeadow' } },
   { minutes: 25, label: 'x2 Wins', icon: 'potionWins', grant: { item: 'potionWins' } },
   { minutes: 35, label: '+250 Wins', icon: 'trophy', grant: { wins: 250 } },
   { minutes: 45, label: 'Sunset Egg', icon: 'egg:sunset', grant: { item: 'eggSunset' } },
-  { minutes: 60, label: 'x2 Skill', icon: 'potionHealth', grant: { item: 'potionHealth' } },
+  { minutes: 60, label: 'x2 Power', icon: 'potionHealth', grant: { item: 'potionHealth' } },
   { minutes: 90, label: 'Unicorn Egg', icon: 'egg:unicorn', grant: { item: 'eggUnicorn' } },
 ]
 
@@ -477,7 +499,7 @@ export const WORLD_PORTALS = {
 
 /**
  * Palm Beach's Secret Star, hidden somewhere in its lobby (STAR in world.js): finding it
- * doubles every Skill gain for good, in every world.
+ * doubles every Power gain for good, in every world.
  */
 export const SECRET_STAR = { world: 1, power: 2 }
 
@@ -485,80 +507,80 @@ export const SECRET_STAR = { world: 1, power: 2 }
 
 /**
  * Palm Beach (World 2), through the portal once you've rebirthed 8 times and hold 1M
- * Wins: a sunny cliff over the sea. Its own Beach Egg, two beach throw pads and a Secret
- * Star, and its own tower to drop on - the Beach Resort, one floor for each of the
- * hotel's - where every metre, trophy and first-visit prize pays `wins` times as much.
- * Its floors need the same Skill as World 1's - a harder World 2 would pay less than
- * World 1 right after each rebirth - so going over is always worth it, and coming back
- * (the same portal) costs nothing.
+ * Wins: a sunny hilltop over the sea. Its own Beach Egg, two beach practice stairs, a
+ * Secret Star, twelve slinkies sold nowhere else, and its own Great Staircase - sixty new
+ * stages - where every stair, trophy and first-visit prize pays `wins` times as much. Its
+ * stages need the same Power as World 1's - a harder World 2 would pay less than World 1
+ * right after each rebirth - so going over is always worth it, and coming back (the same
+ * portal) costs nothing.
  */
 export const WORLDS = [
-  { id: 'world1', name: 'Sky City', wins: 1 },
+  { id: 'world1', name: 'Sky Summit', wins: 1 },
   { id: 'world2', name: 'Palm Beach', wins: 3 },
 ]
 
-/** The Beach Resort's floors in Palm Beach: [id, name, room theme], one for each of World 1's. */
+/** Palm Beach's own sixty stages: [id, name, look], one for each of World 1's. */
 const WORLD2_STAGES = [
-  ['w2-infinity-pool', 'Infinity Pool', 'pool'],
-  ['w2-tiki-lounge', 'Tiki Lounge', 'lounge'],
-  ['w2-seashell-suite', 'Seashell Suite', 'bedroom'],
-  ['w2-coral-bathroom', 'Coral Bathroom', 'bathroom'],
-  ['w2-coconut-kitchen', 'Coconut Kitchen', 'kitchen'],
-  ['w2-seafood-diner', 'Seafood Diner', 'dining'],
-  ['w2-driftwood-library', 'Driftwood Library', 'library'],
-  ['w2-beach-gym', 'Beach Gym', 'gym'],
-  ['w2-boardwalk-arcade', 'Boardwalk Arcade', 'arcade'],
-  ['w2-sunset-cinema', 'Sunset Cinema', 'cinema'],
-  ['w2-seaweed-spa', 'Seaweed Spa', 'spa'],
-  ['w2-luau-ballroom', 'Luau Ballroom', 'ballroom'],
-  ['w2-lifeguard-office', 'Lifeguard Office', 'office'],
-  ['w2-steel-drum-studio', 'Steel Drum Studio', 'music'],
-  ['w2-sandcastle-club', 'Sandcastle Club', 'kids'],
-  ['w2-palm-atrium', 'Palm Atrium', 'garden'],
-  ['w2-towel-laundry', 'Towel Laundry', 'laundry'],
-  ['w2-reef-aquarium', 'Reef Aquarium', 'aquarium'],
-  ['w2-shell-gallery', 'Shell Gallery', 'art'],
-  ['w2-pirate-vault', 'Pirate Vault', 'vault'],
-  ['w2-wave-pool', 'Wave Pool', 'pool'],
-  ['w2-hammock-lounge', 'Hammock Lounge', 'lounge'],
-  ['w2-pelican-suite', 'Pelican Suite', 'bedroom'],
-  ['w2-pearl-bathroom', 'Pearl Bathroom', 'bathroom'],
-  ['w2-mango-kitchen', 'Mango Kitchen', 'kitchen'],
-  ['w2-clam-bake-hall', 'Clam Bake Hall', 'dining'],
-  ['w2-captain-library', 'Captain Library', 'library'],
-  ['w2-surf-gym', 'Surf Gym', 'gym'],
-  ['w2-pier-arcade', 'Pier Arcade', 'arcade'],
-  ['w2-dive-in-cinema', 'Dive-In Cinema', 'cinema'],
-  ['w2-hot-sand-spa', 'Hot Sand Spa', 'spa'],
-  ['w2-hula-ballroom', 'Hula Ballroom', 'ballroom'],
-  ['w2-harbor-office', 'Harbor Office', 'office'],
-  ['w2-ukulele-studio', 'Ukulele Studio', 'music'],
-  ['w2-crab-playroom', 'Crab Playroom', 'kids'],
-  ['w2-banana-garden', 'Banana Garden', 'garden'],
-  ['w2-sail-laundry', 'Sail Laundry', 'laundry'],
-  ['w2-turtle-tank', 'Turtle Tank', 'aquarium'],
-  ['w2-coral-gallery', 'Coral Gallery', 'art'],
-  ['w2-treasure-vault', 'Treasure Vault', 'vault'],
-  ['w2-moonlit-pool', 'Moonlit Pool', 'pool'],
-  ['w2-starfish-lounge', 'Starfish Lounge', 'lounge'],
-  ['w2-mermaid-suite', 'Mermaid Suite', 'bedroom'],
-  ['w2-lagoon-bathroom', 'Lagoon Bathroom', 'bathroom'],
-  ['w2-shipwreck-galley', 'Shipwreck Galley', 'kitchen'],
-  ['w2-kraken-hall', 'Kraken Hall', 'dining'],
-  ['w2-lighthouse-library', 'Lighthouse Library', 'library'],
-  ['w2-shark-gym', 'Shark Gym', 'gym'],
-  ['w2-neon-arcade', 'Neon Arcade', 'arcade'],
-  ['w2-deep-sea-cinema', 'Deep Sea Cinema', 'cinema'],
-  ['w2-volcano-spa', 'Volcano Spa', 'spa'],
-  ['w2-atlantis-ballroom', 'Atlantis Ballroom', 'ballroom'],
-  ['w2-sub-control-room', 'Sub Control Room', 'office'],
-  ['w2-siren-studio', 'Siren Studio', 'music'],
-  ['w2-bubble-playroom', 'Bubble Playroom', 'kids'],
-  ['w2-kelp-garden', 'Kelp Garden', 'garden'],
-  ['w2-tidal-laundry', 'Tidal Laundry', 'laundry'],
-  ['w2-abyss-aquarium', 'Abyss Aquarium', 'aquarium'],
-  ['w2-pearl-gallery', 'Pearl Gallery', 'art'],
-  ['w2-golden-vault', 'Golden Vault', 'vault'],
+  ['w2-sunset-shore', 'Sunset Shore', 'beach'],
+  ['w2-tiki-jungle', 'Tiki Jungle', 'jungle'],
+  ['w2-pearl-reef', 'Pearl Reef', 'reef'],
+  ['w2-taffy-town', 'Taffy Town', 'candy'],
+  ['w2-blossom-bay', 'Blossom Bay', 'sakura'],
+  ['w2-fire-island', 'Fire Island', 'volcano'],
+  ['w2-shell-caves', 'Shell Caves', 'crystal'],
+  ['w2-toadstool-isle', 'Toadstool Isle', 'mushroom'],
+  ['w2-pirate-dunes', 'Pirate Dunes', 'desert'],
+  ['w2-mango-grove', 'Mango Grove', 'autumn'],
+  ['w2-parrot-meadow', 'Parrot Meadow', 'meadow'],
+  ['w2-iceberg-point', 'Iceberg Point', 'snow'],
+  ['w2-banana-plains', 'Banana Plains', 'savanna'],
+  ['w2-boardwalk-lights', 'Boardwalk Lights', 'neon'],
+  ['w2-seagull-skies', 'Seagull Skies', 'clouds'],
+  ['w2-coral-rainbow', 'Coral Rainbow', 'rainbow'],
+  ['w2-glacier-glow', 'Glacier Glow', 'aurora'],
+  ['w2-moon-lagoon', 'Moon Lagoon', 'moon'],
+  ['w2-starfish-galaxy', 'Starfish Galaxy', 'space'],
+  ['w2-ocean-void', 'Ocean Void', 'cosmic'],
+  ['w2-surfers-cove', 'Surfers Cove', 'beach'],
+  ['w2-hidden-falls', 'Hidden Falls', 'jungle'],
+  ['w2-turtle-reef', 'Turtle Reef', 'reef'],
+  ['w2-gummy-gardens', 'Gummy Gardens', 'candy'],
+  ['w2-orchid-path', 'Orchid Path', 'sakura'],
+  ['w2-lava-lagoon', 'Lava Lagoon', 'volcano'],
+  ['w2-amethyst-grotto', 'Amethyst Grotto', 'crystal'],
+  ['w2-fairy-ring', 'Fairy Ring', 'mushroom'],
+  ['w2-treasure-sands', 'Treasure Sands', 'desert'],
+  ['w2-spice-market', 'Spice Market', 'autumn'],
+  ['w2-hula-hills', 'Hula Hills', 'meadow'],
+  ['w2-polar-pier', 'Polar Pier', 'snow'],
+  ['w2-zebra-flats', 'Zebra Flats', 'savanna'],
+  ['w2-neon-pier', 'Neon Pier', 'neon'],
+  ['w2-floating-isles', 'Floating Isles', 'clouds'],
+  ['w2-bubble-rainbow', 'Bubble Rainbow', 'rainbow'],
+  ['w2-frost-fjord', 'Frost Fjord', 'aurora'],
+  ['w2-tide-moon', 'Tide Moon', 'moon'],
+  ['w2-comet-coast', 'Comet Coast', 'space'],
+  ['w2-abyss-gate', 'Abyss Gate', 'cosmic'],
+  ['w2-paradise-point', 'Paradise Point', 'beach'],
+  ['w2-monkey-temple', 'Monkey Temple', 'jungle'],
+  ['w2-shipwreck-reef', 'Shipwreck Reef', 'reef'],
+  ['w2-jellybean-bay', 'Jellybean Bay', 'candy'],
+  ['w2-moonflower-garden', 'Moonflower Garden', 'sakura'],
+  ['w2-dragon-volcano', 'Dragon Volcano', 'volcano'],
+  ['w2-sapphire-cavern', 'Sapphire Cavern', 'crystal'],
+  ['w2-glowshroom-isle', 'Glowshroom Isle', 'mushroom'],
+  ['w2-mirage-desert', 'Mirage Desert', 'desert'],
+  ['w2-golden-harvest', 'Golden Harvest', 'autumn'],
+  ['w2-rainforest-rise', 'Rainforest Rise', 'meadow'],
+  ['w2-crystal-glacier', 'Crystal Glacier', 'snow'],
+  ['w2-elephant-trail', 'Elephant Trail', 'savanna'],
+  ['w2-laser-lagoon', 'Laser Lagoon', 'neon'],
+  ['w2-sky-temple', 'Sky Temple', 'clouds'],
+  ['w2-prism-falls', 'Prism Falls', 'rainbow'],
+  ['w2-aurora-peak', 'Aurora Peak', 'aurora'],
+  ['w2-eclipse-bay', 'Eclipse Bay', 'moon'],
+  ['w2-supernova', 'Supernova', 'space'],
+  ['w2-infinity-sea', 'Infinity Sea', 'cosmic'],
 ]
 
 const worldZones = (world) =>
@@ -576,22 +598,22 @@ const worldZones = (world) =>
     }
   })
 
-/** Each world's floors, as ZONES: `WORLD_ZONES[profile.world]`. */
+/** Each world's stages, as ZONES: `WORLD_ZONES[profile.world]`. */
 export const WORLD_ZONES = [ZONES, worldZones(1)]
 export const zonesOf = (world) => WORLD_ZONES[world] ?? ZONES
 
 // --- Shop -------------------------------------------------------------------------
 
 /**
- * The shop. Wins are the game's only currency: everything here, like phones and eggs,
+ * The shop. Wins are the game's only currency: everything here, like slinkies and eggs,
  * is bought with them. `pass` = permanent unlock; `consumable` = grants every time.
  */
 export const SHOP = {
-  healthX2: { name: 'x2 Skill', price: 400, kind: 'pass' },
+  healthX2: { name: 'x2 Power', price: 400, kind: 'pass' },
   winsX2: { name: 'x2 Wins', price: 2500, kind: 'pass' },
   autoRoll: { name: 'Auto Drop', price: 150, kind: 'pass' },
-  padVeryOp: { name: 'VERY OP! Throw Pad', price: 150000, kind: 'pass' },
-  padBest: { name: 'BEST OVERALL! Throw Pad', price: 2500000, kind: 'pass' },
+  padVeryOp: { name: 'VERY OP! Practice Stairs', price: 150000, kind: 'pass' },
+  padBest: { name: 'BEST OVERALL! Practice Stairs', price: 2500000, kind: 'pass' },
   sphinx: { name: 'Sphinx', price: 2500000, kind: 'consumable', grant: { pet: 'sphinx' }, stock: 1000 },
 }
 
@@ -603,12 +625,12 @@ export const SHOP = {
 export const GEM_PRODUCTS = {
   wins_small: { name: 'Pile of Wins', blurb: '10 max-level drops of Wins', icon: 'trophy', grant: { winsRolls: 10 } },
   wins_big: { name: 'Mountain of Wins', blurb: '60 max-level drops of Wins', icon: 'trophy', grant: { winsRolls: 60 } },
-  potion_bundle: { name: 'Potion Bundle', blurb: '3 x2 Skill + 3 x2 Wins potions', icon: 'potionHealth', grant: { items: { potionHealth: 3, potionWins: 3 } } },
+  potion_bundle: { name: 'Potion Bundle', blurb: '3 x2 Power + 3 x2 Wins potions', icon: 'potionHealth', grant: { items: { potionHealth: 3, potionWins: 3 } } },
   volcano_eggs: { name: '3 Volcano Eggs', blurb: 'The best pets in the game', icon: 'egg:volcano', grant: { items: { eggVolcano: 3 } } },
-  auto_roll: { name: 'Auto Drop', blurb: 'Throws your phone for you from the Drop Zone', icon: 'tire', grant: { pass: 'autoRoll' } },
-  health_x2: { name: 'x2 Skill', blurb: 'Double every Skill gain, forever', icon: 'heart', grant: { pass: 'healthX2' } },
+  auto_roll: { name: 'Auto Drop', blurb: 'Drops your slinky for you from the Drop Zone', icon: 'tire', grant: { pass: 'autoRoll' } },
+  health_x2: { name: 'x2 Power', blurb: 'Double every Power gain, forever', icon: 'heart', grant: { pass: 'healthX2' } },
   wins_x2: { name: 'x2 Wins', blurb: 'Double every drop’s Wins, forever', icon: 'trophy', grant: { pass: 'winsX2' } },
-  pad_best: { name: 'Galaxy Throw Pad', blurb: 'Unlocks the x100 Galaxy throw pad', icon: 'portal', grant: { pass: 'padBest' } },
+  pad_best: { name: 'Galaxy Steps', blurb: 'Unlocks the x100 Galaxy practice stairs', icon: 'portal', grant: { pass: 'padBest' } },
 }
 
 /**
@@ -616,7 +638,7 @@ export const GEM_PRODUCTS = {
  * and hyphens. `cooldownMs` keeps a player from chaining them.
  */
 export const AD_REWARDS = {
-  'health-potion': { label: 'x2 Skill Potion', icon: 'potionHealth', grant: { item: 'potionHealth' }, cooldownMs: 3 * 60 * 1000 },
+  'health-potion': { label: 'x2 Power Potion', icon: 'potionHealth', grant: { item: 'potionHealth' }, cooldownMs: 3 * 60 * 1000 },
   'wins-potion': { label: 'x2 Wins Potion', icon: 'potionWins', grant: { item: 'potionWins' }, cooldownMs: 3 * 60 * 1000 },
 }
 
@@ -624,8 +646,8 @@ export const AD_REWARDS = {
 export const SPHINX_STOCK_DEFAULT = 954
 
 /**
- * The three Skill packs under the level bar. They grow with you: each gives `share`
- * of the Skill your next level needs, for `rolls` drops' worth of Wins at that Skill.
+ * The three Power packs under the level bar. They grow with you: each gives `share`
+ * of the Power your next level needs, for `rolls` drops' worth of Wins at that Power.
  * Packs aren't held back by the level cap.
  */
 export const HEALTH_PACKS = [
@@ -653,7 +675,7 @@ export const STREAK_MAX_DAYS = 11
 export const streakMultiplier = (days) => 1 + STREAK_STEP * (Math.min(STREAK_MAX_DAYS, Math.max(1, days)) - 1)
 
 /**
- * PERFECT combo: PERFECT throws in a row each pay COMBO_STEP more Wins than the last
+ * PERFECT combo: PERFECT drops in a row each pay COMBO_STEP more Wins than the last
  * (the 2nd +10%, the 3rd +20% ... up to +COMBO_MAX); anything less than PERFECT breaks it.
  * Kept for the session, never saved.
  */
@@ -678,7 +700,7 @@ export const LUCKY_CHANCE = 0.08
 export const LUCKY_GIFTS = [
   { weight: 45, label: 'Bag of Wins', icon: 'trophy', grant: { winsRolls: 4 } },
   { weight: 20, label: 'x2 Wins Potion', icon: 'potionWins', grant: { item: 'potionWins' } },
-  { weight: 20, label: 'x2 Skill Potion', icon: 'potionHealth', grant: { item: 'potionHealth' } },
+  { weight: 20, label: 'x2 Power Potion', icon: 'potionHealth', grant: { item: 'potionHealth' } },
   { weight: 15, label: 'Mystery Egg', icon: 'egg', grant: { egg: true } },
 ]
 
@@ -690,8 +712,8 @@ export const LUCKY_GIFTS = [
  *
  * Each kind counts one thing (`counter`, fed by the session as you play) up to its
  * target; `mode: 'best'` keeps the best single value instead of adding up. `targets` are
- * per tier; `scale` scales them with your deepest drop so far ('total': that many of it in
- * metres, 'best': that share of it). `{n}` in `text` is the target.
+ * per tier; `scale` scales them with your longest drop so far ('total': that many of it in
+ * stairs, 'best': that share of it). `{n}` in `text` is the target.
  */
 export const QUESTS_PER_DAY = 3
 export const QUEST_TIERS = [
@@ -701,13 +723,13 @@ export const QUEST_TIERS = [
 ]
 export const QUEST_BONUS = { winsRolls: 15 }
 export const QUEST_TYPES = {
-  launch: { counter: 'launch', text: 'Drop your phone {n} times', targets: [5, 12, 25] },
-  great: { counter: 'great', text: 'Get {n} GREAT or PERFECT throws', targets: [2, 5, 10] },
-  perfect: { counter: 'perfect', text: 'Get {n} PERFECT throws', targets: [1, 3, 6] },
-  combo: { counter: 'combo', mode: 'best', text: 'Hit a PERFECT throw combo of {n}', targets: [2, 3, 4] },
-  reps: { counter: 'rep', text: 'Make {n} practice throws', targets: [40, 120, 300] },
-  meters: { counter: 'meters', text: 'Smash {n} m deep in total', scale: 'total', targets: [4, 10, 25] },
-  far: { counter: 'far', mode: 'best', text: 'Smash {n} m deep in one drop', scale: 'best', targets: [0.6, 0.8, 0.95] },
+  launch: { counter: 'launch', text: 'Drop your slinky {n} times', targets: [5, 12, 25] },
+  great: { counter: 'great', text: 'Get {n} GREAT or PERFECT drops', targets: [2, 5, 10] },
+  perfect: { counter: 'perfect', text: 'Get {n} PERFECT drops', targets: [1, 3, 6] },
+  combo: { counter: 'combo', mode: 'best', text: 'Hit a PERFECT drop combo of {n}', targets: [2, 3, 4] },
+  reps: { counter: 'rep', text: 'Make {n} practice tosses', targets: [40, 120, 300] },
+  meters: { counter: 'meters', text: 'Go down {n} stairs in total', scale: 'total', targets: [4, 10, 25] },
+  far: { counter: 'far', mode: 'best', text: 'Go down {n} stairs in one drop', scale: 'best', targets: [0.6, 0.8, 0.95] },
   hatch: { counter: 'hatch', text: 'Hatch {n} pets', targets: [1, 3, 6] },
   minutes: { counter: 'minute', text: 'Play for {n} minutes', targets: [5, 15, 30] },
 }
@@ -715,24 +737,24 @@ export const QUEST_TYPES = {
 // --- Tutorial & badges ------------------------------------------------------------
 
 /**
- * The guide for new players: train, drop, spend the Wins on a new phone, drop deeper,
- * rebirth. Each step completes when its event fires (and, with `health`, once you have
+ * The guide for new players: practise, drop, spend the Wins on a new slinky, drop
+ * further, rebirth. Each step completes when its event fires (and, with `health`, once you have
  * that much); after the last the guide is done.
  */
 export const TUTORIAL = [
-  { text: 'Stand on a throw pad or tap to throw your phone for Skill', event: 'train', target: 'pad0', health: 30 },
+  { text: 'Stand on the practice stairs or tap to toss your slinky for Power', event: 'train', target: 'pad0', health: 30 },
   { text: 'Go to the DROP ZONE, hold DROP and let go at the top!', event: 'roll', target: 'roll' },
-  { text: 'Buy the Flip Phone with your Wins!', event: 'buyTire', target: 'tires' },
+  { text: 'Buy the Bubblegum Slinky in the Slinky Shop!', event: 'buyTire', target: 'tires' },
 ]
 
 export const BADGES = {
   firstRoll: { name: 'First Drop' },
   firstRebirth: { name: 'First Rebirth' },
   firstPet: { name: 'Pet Owner' },
-  firstWall: { name: 'Floor Smasher' },
-  kilometer: { name: '1 Kilometre Drop' },
-  space: { name: 'Deluxe Smasher' },
-  cosmic: { name: 'Core Crusher' },
+  firstWall: { name: 'Stage Breaker' },
+  kilometer: { name: '1,000 Stairs' },
+  space: { name: 'Star Stepper' },
+  cosmic: { name: 'Endless Stairs' },
   world2: { name: 'Beach Bum' },
   secretStar: { name: 'Star Finder' },
 }

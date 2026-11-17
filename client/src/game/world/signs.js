@@ -12,9 +12,14 @@ import {
 
 import { ROLL_ZONE, SHOP_SIGN, SHOP_SIGN_FACING } from '@shared/world'
 
+import { SLINKY_ARCH } from '../../ui/icons'
+
 import { venueOf } from '../sceneStyle'
 import { DECAL_Y, DIGIT, DIRECTIONS, END_ZONE_TEXT, LOGO, yardNumbers } from './pitch'
 import { ARCH_SIGN } from './rollZone'
+
+/** The slinky emblem's rainbow, ring by ring (as the game's icon). */
+const SLINKY_COLORS = ['#ff4a4a', '#ff9a1e', '#ffe23a', '#4be05a', '#2fd0ff', '#5a7aff', '#b05cff', '#ff5fd2']
 
 const FONT = '"Fredoka One", "Arial Rounded MT Bold", sans-serif'
 
@@ -125,8 +130,8 @@ function arcText(ctx, text, cx, cy, r, size, top) {
 
 /**
  * The circular logo in the plaza: a rim, a ring with the venue's words over the top and
- * under the bottom between two stars, and in the middle a disc with a falling phone on it
- * - in the venue's colours and words (`logo`: SKY CITY, or PALM BEACH RESORT).
+ * under the bottom between two stars, and in the middle a disc with a slinky walking down
+ * a step - in the venue's colours and words (`logo`: SKY CITY, or PALM BEACH RESORT).
  */
 function paintLogo(ctx, [rx, ry, size], logo) {
   const c = size / 2
@@ -160,61 +165,35 @@ function paintLogo(ctx, [rx, ry, size], logo) {
     ctx.fill()
     ctx.restore()
   }
-  // The emblem: a phone tipping over as it falls, its screen cracked, speed marks behind
-  // it (the same art as the game's icon, ui/icons.js).
+  // The emblem: a rainbow slinky arching from one step down to the next (the same art as
+  // the game's icon, ui/icons.js).
   ctx.save()
   const k = (size * 0.5) / 100
   ctx.translate(cx - 50 * k, cy - 50 * k)
   ctx.scale(k, k)
-  ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  for (const [x0, y0, x1, y1] of [[8, 34, 22, 38], [6, 50, 20, 51], [10, 66, 23, 63]]) {
-    ctx.beginPath()
-    ctx.moveTo(x0, y0)
-    ctx.lineTo(x1, y1)
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 5
-    ctx.stroke()
-  }
-  ctx.translate(52, 50)
-  ctx.rotate(-0.42)
-  ctx.translate(-52, -50)
-  const rounded = (x, y, w, h, r) => {
-    ctx.beginPath()
-    ctx.moveTo(x + r, y)
-    ctx.arcTo(x + w, y, x + w, y + h, r)
-    ctx.arcTo(x + w, y + h, x, y + h, r)
-    ctx.arcTo(x, y + h, x, y, r)
-    ctx.arcTo(x, y, x + w, y, r)
-    ctx.closePath()
-  }
-  rounded(30, 10, 44, 80, 10)
-  ctx.fillStyle = '#2a4fd8'
+  ctx.beginPath()
+  ctx.moveTo(2, 66)
+  ctx.lineTo(44, 66)
+  ctx.lineTo(44, 84)
+  ctx.lineTo(98, 84)
+  ctx.lineTo(98, 98)
+  ctx.lineTo(2, 98)
+  ctx.closePath()
+  ctx.fillStyle = '#ffffff'
   ctx.fill()
-  ctx.lineWidth = 6
+  ctx.lineWidth = 5
   ctx.strokeStyle = '#1b1b1f'
   ctx.stroke()
-  rounded(36, 18, 32, 62, 4)
-  const glass = ctx.createLinearGradient(0, 18, 0, 80)
-  glass.addColorStop(0, '#bff6ff')
-  glass.addColorStop(0.5, '#5fd6ff')
-  glass.addColorStop(1, '#3a6bff')
-  ctx.fillStyle = glass
-  ctx.fill()
-  ctx.fillStyle = '#1b1b1f'
-  ctx.fillRect(45, 13, 14, 3.5)
-  ctx.strokeStyle = '#ffffff'
-  ctx.lineWidth = 2.6
-  ctx.beginPath()
-  ctx.moveTo(58, 30)
-  ctx.lineTo(52, 42)
-  ctx.lineTo(60, 48)
-  ctx.lineTo(50, 62)
-  ctx.moveTo(52, 42)
-  ctx.lineTo(42, 46)
-  ctx.moveTo(60, 48)
-  ctx.lineTo(66, 58)
-  ctx.stroke()
+  SLINKY_ARCH.forEach(([x, y, deg], i) => {
+    for (const [width, color] of [[7.5, '#1b1b1f'], [3.6, SLINKY_COLORS[i % SLINKY_COLORS.length]]]) {
+      ctx.beginPath()
+      ctx.ellipse(x, y, 13, 4.4, (deg * Math.PI) / 180, 0, Math.PI * 2)
+      ctx.lineWidth = width
+      ctx.strokeStyle = color
+      ctx.stroke()
+    }
+  })
   ctx.restore()
 }
 
@@ -233,8 +212,8 @@ const ROUND_SIDES = 32
  */
 const cellsFor = (v) => ({
   logo: { rect: [0, 0, 0.5, 0.5], paint: (ctx, r) => paintLogo(ctx, r, v.logo) },
-  arch: { rect: [0.5, 0, 0.5, 0.15], paint: (ctx, r) => paintText(ctx, r, 'SMASH THE HOTEL', { fill: GOLD, edge: '#c2410c', slant: 0.14 }) },
-  shop: { rect: [0.5, 0.15, 0.5, 0.13], paint: (ctx, r) => paintText(ctx, r, 'PHONE SHOP', { fill: GOLD, edge: '#c2410c', slant: 0.14 }) },
+  arch: { rect: [0.5, 0, 0.5, 0.15], paint: (ctx, r) => paintText(ctx, r, 'DOWN THE STAIRS', { fill: GOLD, edge: '#c2410c', slant: 0.14 }) },
+  shop: { rect: [0.5, 0.15, 0.5, 0.13], paint: (ctx, r) => paintText(ctx, r, 'SLINKY SHOP', { fill: GOLD, edge: '#c2410c', slant: 0.14 }) },
   zone: { rect: [0.5, 0.28, 0.5, 0.12], paint: (ctx, r) => paintText(ctx, r, 'DROP ZONE', { fill: NAVY, edge: '#a08a10' }) },
   ...Object.fromEntries(
     Array.from({ length: 6 }, (_, d) => [

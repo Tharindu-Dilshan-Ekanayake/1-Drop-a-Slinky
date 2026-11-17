@@ -1,12 +1,12 @@
 /**
- * The roll's distance counter, zone name and zone progress bar are DOM elements written
+ * The drop's stair counter, stage name and progress bar are DOM elements written
  * from the frame loop. The overlay registers them here; the renderer writes the
  * distance (and slides your marker along the bar) at most UPDATE_HZ times a second and
  * only when the whole-yard value changes, and the zone name only when the ball crosses
  * into a new zone, so React never re-renders during a kick.
  */
 import { ZONES } from '@shared/balance'
-import { formatDistance } from '@shared/format'
+import { formatStairs } from '@shared/format'
 import { zoneIndexAt } from '@shared/logic'
 
 const UPDATE_MS = 1000 / 15
@@ -64,8 +64,8 @@ export function writeDistance(meters, now = performance.now()) {
   if (distanceSpans.length === 0 || m === shown || now - lastWrite < UPDATE_MS) return
   shown = m
   lastWrite = now
-  // Falling: the depth counts down below the edge, "-1,234 m".
-  const text = m > 0 ? `-${formatDistance(m)}` : formatDistance(0)
+  // Going down: the stairs count up, "1,234 STAIRS".
+  const text = `${formatStairs(m)} ${m === 1 ? 'STAIR' : 'STAIRS'}`
   for (const span of distanceSpans) setText(span, text)
   if (marker) marker.style.transform = `translateY(${Math.min(1, m / barMax) * 100}%)`
 }

@@ -1,4 +1,4 @@
-import { comboBonus, crowdBonus, dayNumber, EGGS, hitGrade, ITEMS, MULTI_HATCH, PADS, SHOP, TIRES, TOSS_COOLDOWN, ZONES } from './balance.js'
+import { comboBonus, crowdBonus, dayNumber, EGGS, hitGrade, ITEMS, MULTI_HATCH, PADS, SHOP, TOSS_COOLDOWN, ZONES } from './balance.js'
 import { applyStreak, claimQuest, claimQuestBonus, ensureQuests, progressQuests, questText, rollLuckyGift } from './engage.js'
 import {
   advanceTutorial,
@@ -29,10 +29,9 @@ import {
   usePortal,
   usePotion,
 } from './logic.js'
-import { eggStandNear, FREE_REWARD, inRect, inRollZone, onPad, portalAt, STAR, standRect, TIRE_STANDS } from './world.js'
+import { eggStandNear, FREE_REWARD, inRollZone, onPad, portalAt, STAR } from './world.js'
 
-const TIRE_INDEX = Object.fromEntries(TIRES.map((t, i) => [t.id, i]))
-/** Reaching the hotel's deluxe floors (floor 21) earns its badge; the last floor has its own. */
+/** Reaching stage 21 earns its badge; the last stage has its own. */
 const SPACE_ZONE = 20
 
 /** Quest progress is sent at least this often (seconds) while it's changing. */
@@ -41,8 +40,6 @@ const QUEST_SYNC = 5
 const PAD_SLACK = 0.8
 /** Same for the drop zone. */
 const ROLL_SLACK = 1.5
-/** Tires are bought by standing at their stand; allow for a little lag. */
-const STAND_SLACK = 2
 
 /**
  * One player's authoritative session: validates intents, runs the training tick and
@@ -258,8 +255,9 @@ export class PlayerSession {
       if (this.profile.stats.bestZone >= ZONES.length - 1) this.badge('cosmic')
     },
 
+    // From a stand in the slinky shop or the Slinkies panel: the price and the order
+    // (logic.buyTire) are what's checked.
     buyTire({ id }) {
-      if (!this.nearStandFor(id)) return
       const result = buyTire(this.profile, id)
       if (!result.ok) return
       this.dirty = true
@@ -434,14 +432,6 @@ export class PlayerSession {
   }
 
   // --- Simulation ------------------------------------------------------------------
-
-  /** Whether the player stands at (or right by) the stand for tire `id`. */
-  nearStandFor(id) {
-    const stand = TIRE_STANDS[TIRE_INDEX[id]]
-    if (!stand) return false
-    const p = this.getPosition()
-    return inRect(standRect(stand), p.x, p.z, STAND_SLACK)
-  }
 
   /** Whether the player is really standing on the pad they claim. */
   onClaimedPad() {

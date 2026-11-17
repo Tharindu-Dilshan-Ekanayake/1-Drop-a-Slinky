@@ -24,8 +24,8 @@ const roundButton = (size, background) => ({
 /**
  * On-screen controls for touch devices: a floating joystick that appears wherever the
  * left side of the screen is touched, a jump button and over it THROW, which throws your
- * phone for Skill (a tap on the game does too). Everything else is walking onto things:
- * the drop zone, a throw pad, a phone stand.
+ * slinky for Power (a tap on the game does too). Everything else is walking onto things:
+ * the drop zone, practice stairs, a slinky stand.
  *
  * Writes straight into `runtime.input` and moves the knob through refs, so dragging
  * never re-renders React.
@@ -135,7 +135,7 @@ export function TouchControls() {
       {canThrow && (
         <button
           type="button"
-          aria-label="Throw your phone"
+          aria-label="Toss your slinky"
           className="touch-throw pp-btn pp-chunky absolute z-20 flex touch-none flex-col items-center justify-center rounded-full text-white"
           style={roundButton(96, GRADIENTS.goldButton)}
           onPointerDown={(e) => {

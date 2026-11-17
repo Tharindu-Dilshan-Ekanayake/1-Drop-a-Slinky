@@ -5,16 +5,16 @@ import { iconUrl } from './icons'
 import StrokeText from './StrokeText'
 
 const TIPS = [
-  'Stand on a throw pad to practise throwing - every throw gives Skill!',
-  'More Skill = your phone smashes deeper, and every metre pays Wins!',
+  'Stand on the practice stairs - every toss gives Power!',
+  'More Power = your slinky goes further down the stairs, and every stair pays Wins!',
   'Let go of DROP at the very top of the meter for a PERFECT throw: x1.5 depth, x1.6 Wins!',
-  'Rebirth at max level for x2, x3, x4... Skill and a higher level cap.',
-  'The deeper the floor, the more each metre pays.',
-  'Spend Wins on newer phones, pets and better throw pads.',
-  'Pets multiply all the Skill you gain.',
-  'You earn Skill every second your phone falls!',
-  'Every phone looks different - collect all 24!',
-  'Reach a new floor for the first time for a big Wins prize!',
+  'Rebirth at max level for x2, x3, x4... Power and a higher level cap.',
+  'The further the stage, the more each stair pays.',
+  'Spend Wins on better slinkies, pets and practice stairs.',
+  'Pets multiply all the Power you gain.',
+  'Every slinky has its own aura - collect them all!',
+  '36 slinkies to collect - 12 of them only in Palm Beach!',
+  'Reach a new stage for the first time for a big Wins prize!',
 ]
 
 /**
@@ -70,11 +70,11 @@ export function LoadingScreen({ done }) {
         <img src={iconUrl('tire')} alt="" width="150" height="150" draggable={false} />
       </div>
 
-      {/* The game's name: PHONE over a big rainbow THROW, tilted like a sticker. */}
+      {/* The game's name: COIL over a big rainbow CASCADE, tilted like a sticker. */}
       <h1 className="m-0 flex flex-col items-center text-center leading-none" style={{ transform: 'rotate(-3deg)' }}>
         <span style={{ fontSize: 'clamp(36px, 8vw, 84px)' }}>
           <StrokeText stroke="0.16em" gradient="linear-gradient(180deg, #ffffff 0%, #ffffff 55%, #ffe36b 56%, #ffb21e 100%)">
-            +1 PHONE
+            +1 Drop a
           </StrokeText>
         </span>
         <span style={{ fontSize: 'clamp(44px, 10vw, 118px)', marginTop: '-0.08em' }}>
@@ -82,11 +82,11 @@ export function LoadingScreen({ done }) {
             stroke="0.15em"
             gradient="linear-gradient(90deg, #ff4a4a 0%, #ff9a1e 18%, #ffe23a 36%, #4be05a 54%, #2fd0ff 72%, #b05cff 90%, #ff5fd2 100%)"
           >
-            DROP
+            Slinky
           </StrokeText>
         </span>
         <span className="text-base md:text-xl" style={{ marginTop: '0.4em' }}>
-          <StrokeText stroke={5}>AIM • DROP • SMASH • REBIRTH</StrokeText>
+          <StrokeText stroke={5}>PRACTISE • DROP • 120 STAGES • REBIRTH</StrokeText>
         </span>
       </h1>
 

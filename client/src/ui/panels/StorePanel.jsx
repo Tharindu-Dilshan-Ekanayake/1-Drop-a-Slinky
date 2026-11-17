@@ -16,7 +16,7 @@ import Panel from './Panel'
 
 const SECTIONS = [
   { title: 'Passes', items: ['healthX2', 'winsX2', 'autoRoll'] },
-  { title: 'Training Pads', items: ['padVeryOp', 'padBest'] },
+  { title: 'Practice Stairs', items: ['padVeryOp', 'padBest'] },
   { title: 'Specials', items: ['sphinx'] },
 ]
 
@@ -29,12 +29,12 @@ const ICONS = {
 }
 
 const BLURBS = {
-  healthX2: 'Double every Skill gain, forever',
+  healthX2: 'Double every Power gain, forever',
   winsX2: 'Double the Wins from every drop, forever',
-  autoRoll: 'Throws your phone for you from the Drop Zone',
-  padVeryOp: 'Unlocks the x40 Diamond Pad',
-  padBest: 'Unlocks the x100 Galaxy Pad',
-  sphinx: `Limited: x${formatNumber(PETS.sphinx.mult)} Skill pet`,
+  autoRoll: 'Drops your slinky for you from the Drop Zone',
+  padVeryOp: 'Unlocks the x40 Crystal Steps',
+  padBest: 'Unlocks the x100 Galaxy Steps',
+  sphinx: `Limited: x${formatNumber(PETS.sphinx.mult)} Power pet`,
 }
 
 const BLURB_STYLE = { color: '#3a2a10', fontFamily: 'system-ui, sans-serif', fontWeight: 700 }

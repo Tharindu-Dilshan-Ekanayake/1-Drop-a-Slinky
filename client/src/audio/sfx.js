@@ -681,71 +681,58 @@ export const sfx = {
     tone(120, { duration: 0.16, volume: 0.1, slideTo: 55 })
     tone(140, { at: 0.22, duration: 0.12, volume: 0.05, slideTo: 70 })
   },
-  /** Flinging the phone off the edge (`power` 0-1, how good the throw): a whip of air and a rising whoosh. */
-  throwPhone(power = 1) {
-    if (!ready('throwPhone', 250)) return
-    noise({ duration: 0.08, volume: 0.22, from: 3000, to: 1200, q: 1 })
-    noise({ at: 0.04, duration: 0.5, volume: 0.1 * (0.6 + 0.4 * power), from: 400, to: 2600, q: 0.7 })
-    tone(330, { type: 'triangle', duration: 0.3, volume: 0.07, slideTo: 990 })
-  },
-  /** The phone smashing through the hotel's glass roof: a bright shatter and tinkling shards. */
-  glassSmash() {
-    if (!ready('glassSmash', 300)) return
-    liveCrowd()?.roar(0.6)
-    tone(90, { duration: 0.35, volume: 0.22, slideTo: 40 })
-    noise({ duration: 0.12, volume: 0.42, from: 6500, to: 3000, q: 0.5 })
-    noise({ duration: 0.5, volume: 0.18, from: 4200, to: 1400, q: 0.8 })
-    for (let i = 0; i < 12; i += 1) {
-      bell(2400 + Math.random() * 2600, { at: 0.06 + i * 0.045 + Math.random() * 0.03, volume: 0.035, decay: 0.16 })
-    }
+  /** Tossing the slinky onto the top step (`power` 0-1, how good the drop): a whoosh and a springy twang. */
+  tossSlinky(power = 1) {
+    if (!ready('tossSlinky', 250)) return
+    noise({ duration: 0.08, volume: 0.2, from: 3000, to: 1200, q: 1 })
+    noise({ at: 0.04, duration: 0.4, volume: 0.09 * (0.6 + 0.4 * power), from: 400, to: 2600, q: 0.7 })
+    tone(260, { type: 'triangle', duration: 0.28, volume: 0.08, slideTo: 780 })
+    tone(520, { type: 'sine', at: 0.05, duration: 0.22, volume: 0.04, slideTo: 1300 })
   },
   /**
-   * Smashing through a floor (`n`: how many so far this drop): a crunch of concrete, a deep
-   * boom and rubble pattering down, with a ding that climbs with every floor.
+   * The slinky landing on a step (`n`: flips so far this drop, `leap`: how many steps that
+   * flip spanned): the springy metal clink of its coils settling, a little higher with every
+   * flip, and a longer twang for a big leap.
    */
-  floorSmash(n = 1) {
-    if (!ready('floorSmash', 70)) return
-    tone(85, { duration: 0.3, volume: 0.26, slideTo: 36 })
-    noise({ duration: 0.09, volume: 0.36, from: 2600, to: 900, q: 0.6 })
-    noise({ duration: 0.3, volume: 0.2, from: 1200, to: 260, q: 0.8 })
-    if (!lite()) for (let i = 0; i < 6; i += 1) tone(500 + Math.random() * 900, { type: 'square', at: 0.07 + i * 0.05 + Math.random() * 0.03, duration: 0.025, volume: 0.03 })
-    const step = Math.min(Math.max(0, n - 1), 14)
-    const f = 523 * Math.pow(2, step / 12)
-    tone(f, { type: 'triangle', at: 0.03, duration: 0.16, volume: 0.07, echo: true })
+  slinkyStep(n = 1, leap = 1) {
+    if (!ready('slinkyStep', 60)) return
+    const f = 900 + ((n * 37) % 7) * 70
+    tone(f, { type: 'triangle', duration: 0.05, volume: 0.05, slideTo: f * 0.7 })
+    noise({ duration: 0.05, volume: 0.06, from: 5200, to: 2600, q: 2.2 })
+    if (leap > 2 && !lite()) tone(340, { type: 'sine', duration: 0.18, volume: 0.035, slideTo: 220 })
   },
-  /** Stopping on the last floor (`power` 0-1): a heavy slam and a crack spreading out. */
-  phoneLand(power = 1) {
-    if (!ready('phoneLand', 300)) return
+  /** Reaching a new stage's gate (`n`: which stage): a bright chime that climbs stage by stage. */
+  stageGate(n = 1) {
+    if (!ready('stageGate', 150)) return
+    const step = Math.min(Math.max(0, n - 1), 24)
+    const f = 523 * Math.pow(2, (step % 12) / 12) * (step >= 12 ? 2 : 1)
+    bell(f, { volume: 0.08, decay: 0.5 })
+    bell(f * 1.5, { at: 0.09, volume: 0.06, decay: 0.5 })
+  },
+  /** Reaching over the edge for one more step at the very end: a rising, straining twang. */
+  slinkyCreak() {
+    if (!ready('slinkyCreak', 300)) return
+    tone(240, { type: 'triangle', duration: 0.55, volume: 0.05, slideTo: 520 })
+    tone(480, { type: 'sine', at: 0.05, duration: 0.5, volume: 0.025, slideTo: 1040 })
+  },
+  /** Stopping on its last step (`power` 0-1): a long, springy boing wobbling away to nothing. */
+  slinkyLand(power = 1) {
+    if (!ready('slinkyLand', 300)) return
     liveCrowd()?.roar(0.5 + 0.5 * power)
     const p = 0.6 + 0.4 * power
-    tone(70, { duration: 0.7, volume: 0.34 * p, slideTo: 30 })
-    noise({ duration: 0.16, volume: 0.3 * p, from: 1800, to: 400, q: 0.7 })
-    noise({ at: 0.1, duration: 0.35, volume: 0.12 * p, from: 3000, to: 700, q: 1.6 })
-    tone(220, { type: 'square', at: 0.05, duration: 0.1, volume: 0.06, slideTo: 90 })
-  },
-  /** Furniture bursting apart under the falling phone: a woody crack and pieces clattering. */
-  furnitureSmash() {
-    if (!ready('furnitureSmash', 90)) return
-    noise({ duration: 0.06, volume: 0.22, from: 3200, to: 1400, q: 0.9 })
-    tone(160, { type: 'square', duration: 0.07, volume: 0.06, slideTo: 70 })
-    if (lite()) return
-    for (let i = 0; i < 4; i += 1) {
-      tone(700 + Math.random() * 700, { type: 'triangle', at: 0.05 + i * 0.045 + Math.random() * 0.02, duration: 0.03, volume: 0.035 })
+    tone(200, { type: 'sine', duration: 0.5, volume: 0.16 * p, slideTo: 120 })
+    for (let i = 0; i < 5; i += 1) {
+      tone(330 - i * 18, { type: 'triangle', at: 0.06 + i * 0.09, duration: 0.08, volume: 0.05 * p * (1 - i * 0.17), slideTo: 250 - i * 14 })
     }
+    noise({ duration: 0.08, volume: 0.1 * p, from: 4200, to: 1800, q: 1.4 })
   },
-  /** A hop as the phone settles (`n` 1, 2, 3...): a plasticky clack, softer each time. */
-  phoneBounce(n = 1) {
-    const v = 1 / (1 + (n - 1) * 0.9)
-    tone(210, { type: 'square', duration: 0.05, volume: 0.06 * v, slideTo: 120 })
-    noise({ duration: 0.05, volume: 0.09 * v, from: 2600, to: 900, q: 1.1 })
-  },
-  /** A practice throw leaving your hand on a throw pad: a quick, light whoosh. */
+  /** A practice toss leaving your hand: a quick, light whoosh. */
   practiceThrow() {
     if (!ready('practiceThrow', 200)) return
     noise({ duration: 0.18, volume: 0.07, from: 600, to: 2400, q: 0.8 })
     tone(420, { type: 'triangle', duration: 0.12, volume: 0.03, slideTo: 880 })
   },
-  /** A practice phone landing on its target: a plasticky clack and a tiny bounce. */
+  /** A practice slinky reaching the foot of its little staircase: a springy clink and a tiny bounce. */
   practiceLand() {
     if (!ready('practiceLand', 90)) return
     tone(260, { type: 'square', duration: 0.05, volume: 0.05, slideTo: 140 })

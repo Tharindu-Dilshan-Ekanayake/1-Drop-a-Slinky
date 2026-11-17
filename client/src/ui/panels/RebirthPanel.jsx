@@ -73,9 +73,9 @@ export function RebirthPanel() {
           <StrokeText stroke={u(11)}>After Rebirth</StrokeText>
         </div>
 
-        <StatCard kind="health" text={`${formatMultiplier(rebirthMultiplier(rebirths))} Skill`} />
+        <StatCard kind="health" text={`${formatMultiplier(rebirthMultiplier(rebirths))} Power`} />
         <Icon name="fastForward" size={u(80)} />
-        <StatCard kind="after" text={`${formatMultiplier(rebirthMultiplier(rebirths + 1))} Skill`} />
+        <StatCard kind="after" text={`${formatMultiplier(rebirthMultiplier(rebirths + 1))} Power`} />
 
         <StatCard kind="level" text={`Max Level ${cap}`} />
         <Icon name="fastForward" size={u(80)} />

@@ -5,6 +5,7 @@
  */
 export const PANEL_LOADERS = {
   pets: () => import('./PetsPanel'),
+  slinkies: () => import('./SlinkiesPanel'),
   rebirth: () => import('./RebirthPanel'),
   daily: () => import('./DailyRewardsPanel'),
   quests: () => import('./QuestsPanel'),

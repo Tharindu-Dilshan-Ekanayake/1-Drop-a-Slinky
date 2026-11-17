@@ -9,7 +9,7 @@ import { getQuality } from '../../store/quality'
 import { createBoxInstances, disposeBlocks } from '../blocks'
 import { TOSS_TIME } from '../practice'
 import { sharedMaterials, STYLE } from '../materials'
-import { T_RELEASE } from '../roll/dropPath'
+import { T_RELEASE } from '../roll/stairsPath'
 import { runtime } from '../runtime'
 import { hideNameplatesFrom, NAMEPLATE_POOL_SIZE, placeNameplate } from './nameplates'
 

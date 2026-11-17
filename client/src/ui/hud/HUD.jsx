@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { setSpeedTunnelElement } from '../../game/roll/hudLink'
 import { useGame } from '../../store/game'
+import { useQuality } from '../../store/quality'
 import EggPanel from './EggPanel'
 import InteractPrompt from './InteractPrompt'
 import LeftMenu from './LeftMenu'
@@ -32,9 +33,12 @@ import TopCenter from './TopCenter'
  */
 function SpeedTunnel() {
   const ref = useCallback((el) => setSpeedTunnelElement(el), [])
+  // The rushing streaks (a big masked gradient, animated) cost a slow phone a third of its
+  // frame time on a fast drop: LOW keeps only the still haze.
+  const streaks = useQuality((s) => s.level !== 'LOW')
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 overflow-hidden" style={{ opacity: 0, visibility: 'hidden' }}>
-      <div className="pp-tunnel absolute" />
+      {streaks && <div className="pp-tunnel absolute" />}
       <div className="pp-tunnel-haze absolute inset-0" />
     </div>
   )
