@@ -48,7 +48,7 @@ export const useGame = create((set, get) => ({
   roll: null,
   /** Wins earned by the current drop, held back from the HUD until the phone stops. */
   pendingWins: 0,
-  /** "+N Wins!" result once the phone has stopped. */
+  /** "+N Wins!" result once the slinky has stopped. */
   rollResult: null,
   /** A short celebration banner: { text, id } (new zone, ad reward, Gems purchase). */
   toast: null,

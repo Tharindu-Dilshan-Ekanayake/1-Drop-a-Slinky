@@ -22,14 +22,14 @@ export const TEXT = {
 const tint = (hex) => ['#ffffff', hex, hex]
 
 /**
- * "x4 SKILL / Turbo Throw Pad / LOCKED: 2 Rebirths", "x1 SKILL / Basic Throw Pad / FREE",
- * "x40 SKILL / VERY OP! / 150K Wins"... (hung on each throw pad's backboard).
+ * "x4 POWER / Turbo Steps / LOCKED: 2 Rebirths", "x1 POWER / Wooden Steps / FREE",
+ * "x40 POWER / VERY OP! / 150K Wins"... (hung on each practice staircase's backboard).
  */
 export function padLabelSpec(index, unlocked, world = 0) {
   const pad = PADS[index]
   const theme = PAD_THEMES[index]
   const lines = [
-    { text: `x${formatNumber(pad.mult)} SKILL`, size: 54, icon: 'heart', gradient: tint(theme.text) },
+    { text: `x${formatNumber(pad.mult)} POWER`, size: 54, icon: 'heart', gradient: tint(theme.text) },
     { text: pad.name, size: 34, fill: '#ffffff' },
   ]
   if (unlocked) {
@@ -50,7 +50,7 @@ export function padLabelSpec(index, unlocked, world = 0) {
 const padReserve = (index) => {
   const pad = PADS[index]
   const lines = [
-    { text: `x${formatNumber(pad.mult)} SKILL`, size: 54, icon: 'heart' },
+    { text: `x${formatNumber(pad.mult)} POWER`, size: 54, icon: 'heart' },
     { text: pad.name, size: 34 },
   ]
   if (pad.product) {
@@ -65,7 +65,7 @@ const padReserve = (index) => {
 export function padLabels(profile) {
   return PADS.map((pad, i) => ({
     id: `pad-${i}`,
-    // Well in front of the throw pad's backboard (structures.js), centred on it: the label
+    // Well in front of the practice stairs' backboard (structures.js), centred on it: the label
     // turns to face the camera and is wider than the board, so any nearer and its far half
     // swings behind the board seen from an angle.
     position: [TABLE_X - 2.2, BOARD_BOTTOM + BOARD_HEIGHT / 2, padCenterZ(i)],
@@ -75,7 +75,7 @@ export function padLabels(profile) {
   }))
 }
 
-/** Ownership state of each phone stand: 'equipped' | 'owned' | 'buy' | 'locked'. */
+/** Ownership state of each slinky stand: 'equipped' | 'owned' | 'buy' | 'locked'. */
 export function standState(profile, index) {
   const tire = TIRES[index]
   if (profile.equippedTire === tire.id) return 'equipped'
@@ -84,34 +84,37 @@ export function standState(profile, index) {
   return !previous || profile.ownedTires.includes(previous.id) ? 'buy' : 'locked'
 }
 
-/** A phone's rarity line: in its rarity's colour, rainbow for the Secret ones. */
+/** A slinky's rarity line: in its rarity's colour, rainbow for the Secret and better ones. */
 const rarityLine = (tire) => {
   const rarity = RARITIES[tire.rarity]
-  return tire.rarity === 'secret'
+  return tire.rarity === 'secret' || tire.rarity === 'divine' || tire.rarity === 'celestial'
     ? { text: rarity.name.toUpperCase(), size: 36, rainbow: true }
     : { text: rarity.name.toUpperCase(), size: 34, gradient: tint(rarity.color) }
 }
 
 /**
- * A state tag (EQUIPPED / OWNED / CAN BUY! / LOCKED), the phone's name, "+3 Skill" (each
- * gain), then its price in Wins - or its rarity once it's yours.
+ * A state tag (EQUIPPED / OWNED / CAN BUY! / LOCKED - or PALM BEACH ONLY), the slinky's
+ * name, "+3 Power" (each gain), then its price in Wins - or its rarity once it's yours.
  */
-export function standLabelSpec(index, state) {
+export function standLabelSpec(index, state, world = 0) {
   const tire = TIRES[index]
+  const elsewhere = tire.world !== undefined && world !== tire.world && state !== 'equipped' && state !== 'owned'
   const tag =
     state === 'equipped'
       ? { text: 'EQUIPPED', size: 36, gradient: TEXT.green }
       : state === 'owned'
         ? { text: 'OWNED', size: 36, gradient: TEXT.blue }
-        : state === 'buy'
-          ? { text: 'CAN BUY!', size: 36, gradient: TEXT.green }
-          : { text: 'LOCKED', size: 36, gradient: TEXT.red }
+        : elsewhere
+          ? { text: `${WORLDS[tire.world].name.toUpperCase()} ONLY`, size: 34, gradient: TEXT.blue }
+          : state === 'buy'
+            ? { text: 'CAN BUY!', size: 36, gradient: TEXT.green }
+            : { text: 'LOCKED', size: 36, gradient: TEXT.red }
   const last =
     state === 'equipped' || state === 'owned'
       ? rarityLine(tire)
       : { text: `${formatNumber(tire.cost)} Wins`, size: 40, icon: 'trophy', gradient: state === 'locked' ? TEXT.red : TEXT.price }
   return {
-    lines: [tag, { text: tire.name, size: 46, fill: '#ffffff' }, { text: `+${formatNumber(tire.power)} Skill`, size: 40, icon: 'heart', gradient: TEXT.gold }, last],
+    lines: [tag, { text: tire.name, size: 46, fill: '#ffffff' }, { text: `+${formatNumber(tire.power)} Power`, size: 40, icon: 'heart', gradient: TEXT.gold }, last],
     pxPerUnit: 70,
   }
 }
@@ -119,9 +122,9 @@ export function standLabelSpec(index, state) {
 /** Largest a stand label can get, so its atlas slot fits every state. */
 const standReserve = (index) => ({
   lines: [
-    { text: 'CAN BUY!', size: 36 },
+    { text: 'PALM BEACH ONLY', size: 36 },
     { text: TIRES[index].name, size: 46 },
-    { text: `+${formatNumber(TIRES[index].power)} Skill`, size: 40, icon: 'heart' },
+    { text: `+${formatNumber(TIRES[index].power)} Power`, size: 40, icon: 'heart' },
     { text: `${formatNumber(TIRES[index].cost)} Wins`, size: 40, icon: 'trophy' },
   ],
 })
@@ -130,8 +133,8 @@ export function standLabels(profile) {
   return TIRE_STANDS.map((stand) => ({
     id: `stand-${stand.index}`,
     // Each row back rides higher, so they clear the rows in front seen from the plaza.
-    position: [stand.x, stand.y + 6.8 + stand.row * 1.35, stand.z],
-    spec: standLabelSpec(stand.index, standState(profile, stand.index)),
+    position: [stand.x, stand.y + 5.4 + stand.row * 1.35, stand.z],
+    spec: standLabelSpec(stand.index, standState(profile, stand.index), profile.world || 0),
     reserve: standReserve(stand.index),
     fade: 70,
   }))
@@ -196,8 +199,8 @@ const scoreboardLabel = () => ({
   position: [SCOREBOARD.x, SCOREBOARD.y + 0.8 + SCOREBOARD.height / 2, SCOREBOARD.z - 1.5],
   spec: {
     lines: [
-      { text: 'PHONE PLUNGE', size: 100, gradient: TEXT.gold },
-      { text: 'TRAIN - DROP - SMASH - REBIRTH', size: 44, gradient: TEXT.white },
+      { text: 'COIL CASCADE', size: 100, gradient: TEXT.gold },
+      { text: 'PRACTISE - DROP - DOWN THE STAIRS - REBIRTH', size: 44, gradient: TEXT.white },
     ],
     pxPerUnit: 34,
   },
@@ -251,8 +254,8 @@ const dropLabel = () => ({
   position: [0, 4.2, ROLL_ZONE.maxZ - 1],
   spec: {
     lines: [
-      { text: 'DROP YOUR PHONE!', size: 60, gradient: TEXT.gold },
-      { text: 'Smash deeper = MORE WINS', size: 40, gradient: TEXT.white },
+      { text: 'DROP YOUR SLINKY!', size: 60, gradient: TEXT.gold },
+      { text: 'More stairs = MORE WINS', size: 40, gradient: TEXT.white },
     ],
     pxPerUnit: 52,
   },

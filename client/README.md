@@ -1,16 +1,31 @@
-# React + Vite
+# Coil Cascade - client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Drop your slinky down the Great Staircase: React 19 + React Three Fiber + three.js, built
+with Vite. Game rules and data live in `../shared` (also used by the server).
 
-Currently, two official plugins are available:
+```sh
+npm ci
+npm run dev            # http://localhost:5173 (?offline plays without a server)
+npm run build          # production build in dist/
+npm run lint
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Useful URL flags: `?offline` (local authority, no server), `?debug` (exposes `window.__pp`,
+including `__pp.testDrop(stairs)` to play a drop of any length), `?perf` (dev only: the
+r3f-perf overlay).
 
-## React Compiler
+Where things are:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| What | File |
+|------|------|
+| Slinkies, stages, prices, worlds | `../shared/balance.js` |
+| Each slinky's colours and aura | `src/game/slinkyStyles.js` |
+| Aura shaders (shell + particles) | `src/game/fx/auraMaterial.js`, `src/game/fx/Aura.jsx` |
+| The staircase (streamed window) | `src/game/roll/Stairs.jsx` |
+| Stage looks (20 themes) | `src/game/roll/stageThemes.js` |
+| Drop timeline and flips | `src/game/roll/stairsPath.js` |
+| The slinky walking the stairs | `src/game/roll/Slinky.jsx` |
+| Drop camera, trophies, speed lines | `src/game/roll/Roll.jsx` |
+| Practice stairs | `src/game/practice.js`, `src/game/PracticeThrows.jsx`, `src/game/world/structures.js` |
+| Slinky shop / Slinkies panel | `src/game/world/SlinkyShop.jsx`, `src/ui/panels/SlinkiesPanel.jsx` |
+| Quality presets | `src/store/quality.js` |

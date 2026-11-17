@@ -190,13 +190,14 @@ export const SCOREBOARD = { x: 0, z: PLAZA.maxZ + 14, y: WALL_TOP + 2.6, width: 
 
 export function addScoreboard(blocks, v) {
   const { x, z, y, width, height } = SCOREBOARD
-  for (const side of [-1, 1]) blocks.addOn(x + side * (width / 2 - 3), 0, z + 0.4, 1.4, y, 1.2, v.dark, STYLE.SMOOTH)
+  for (const side of [-1, 1]) blocks.addOn(x + side * (width / 2 - 3), 0, z + 0.45, 1.4, y, 1.3, v.dark, STYLE.SMOOTH)
   // Frame, navy screen, glowing gold edge and a row of blue/white lamps along the top.
   blocks.addOn(x, y, z, width + 1.6, height + 1.6, 1.4, '#cfd6e4', STYLE.SMOOTH)
   blocks.addOn(x, y + 0.8, z - 0.2, width, height, 1.4, '#0e1740', STYLE.SMOOTH)
   blocks.addOn(x, y + 0.5, z - 1, width - 0.6, 0.35, 0.2, v.accent, STYLE.GLOW)
   blocks.addOn(x, y + height + 0.7 - 0.35, z - 1, width - 0.6, 0.35, 0.2, v.accent, STYLE.GLOW)
-  for (const side of [-1, 1]) blocks.addOn(x + side * (width / 2 - 0.3), y + 0.8, z - 1, 0.35, height, 0.2, v.accent, STYLE.GLOW)
+  // The side strips stand proud of the top and bottom ones where they meet at the corners.
+  for (const side of [-1, 1]) blocks.addOn(x + side * (width / 2 - 0.3), y + 0.8, z - 1.04, 0.35, height, 0.28, v.accent, STYLE.GLOW)
   for (let i = 0; i < 15; i += 1) {
     blocks.addOn(x - width / 2 + 1 + i * 2, y + height + 1.6, z, 1.2, 0.9, 1.2, i % 2 ? v.primary : '#ffffff', STYLE.GLOW)
   }

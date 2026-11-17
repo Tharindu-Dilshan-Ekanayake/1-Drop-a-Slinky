@@ -46,7 +46,7 @@ function usePrompt() {
 
   if (padLocked) {
     const pad = PADS[padNear]
-    const title = `${pad.name} - ${formatNumber(pad.mult)}x Skill`
+    const title = `${pad.name} - ${formatNumber(pad.mult)}x Power`
     if (pad.product) {
       return { title, action: `Unlock - ${formatNumber(SHOP[pad.product].price)} Wins`, run: () => buy(pad.product) }
     }
@@ -65,7 +65,7 @@ function usePrompt() {
 
   if (stand >= 0) {
     const tire = TIRES[stand]
-    const title = `${tire.name} - +${formatNumber(tire.power)} Skill`
+    const title = `${tire.name} - +${formatNumber(tire.power)} Power`
     const state = standState({ ownedTires: owned, equippedTire: equipped }, stand)
     if (state === 'equipped') return { title, action: 'Equipped', run: null }
     if (state === 'owned') return { title, action: 'Equip', run: () => actions.equipTire(tire.id) }

@@ -19,7 +19,7 @@ import RemoteAvatars from './remote/RemoteAvatars'
 import RemotePlayers from './remote/RemotePlayers'
 import Particles from './fx/Particles'
 import Leaderboards from './world/Leaderboards'
-import TireShop from './world/TireShop'
+import SlinkyShop from './world/SlinkyShop'
 import EggDisplays from './world/EggDisplays'
 import Portal from './world/Portal'
 import SecretStar from './world/SecretStar'
@@ -42,8 +42,8 @@ const DevPerf = import.meta.env.DEV
   : null
 const showDevPerf = import.meta.env.DEV && new URLSearchParams(window.location.search).has('perf')
 
-// The drop scene (the hotel, the city below and everything that happens as the phone
-// falls) is its own chunk, fetched once the lobby is on screen so it never delays
+// The drop scene (the Great Staircase and everything that happens as the slinky goes down
+// it) is its own chunk, fetched once the lobby is on screen so it never delays
 // time-to-playable.
 const Roll = lazy(() => import('./roll/Roll'))
 
@@ -88,7 +88,7 @@ function ViewDistance({ far }) {
 
 /**
  * The camera's vertical field of view for a screen `aspect` wide: 60 degrees on a
- * landscape screen; wider on one held upright, so the lobby and the hotel below still fit
+ * landscape screen; wider on one held upright, so the lobby and the stairs below still fit
  * across a phone in portrait instead of being cropped to a narrow slit.
  */
 const fovForAspect = (aspect) => (aspect >= 1 ? 60 : Math.min(84, 60 / Math.sqrt(Math.max(0.3, aspect))))
@@ -237,7 +237,9 @@ export function GameScene({ onReady }) {
         // No tone mapping. The default (ACES) desaturates the toy colours; the palette
         // and light levels in sceneStyle.js are chosen to look right without it.
         flat
-        camera={{ position: [0, 6, 26], fov: 60, near: 0.5, far: settings.viewDistance }}
+        // Near plane at 0.8 m, not 0.5: depth precision far off grows with it, so distant
+        // surfaces close together don't flicker on a phone's coarser depth buffer.
+        camera={{ position: [0, 6, 26], fov: 60, near: 0.8, far: settings.viewDistance }}
         onCreated={handleCreated}
       >
         <fog attach="fog" args={[FOG.color, settings.fogNear, settings.viewDistance * 0.95]} />
@@ -253,7 +255,7 @@ export function GameScene({ onReady }) {
         <Lighting />
         <World />
         <WorldLabels />
-        <TireShop />
+        <SlinkyShop />
         <EggDisplays />
         <SecretStar />
         <Portal />

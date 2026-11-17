@@ -34,7 +34,7 @@ const GRADE_COLORS = { perfect: '#ffd21f', great: '#7dff4a', good: '#9fe8ff', we
  * The DROP ZONE's HUD: the big DROP! button and, while you hold it, the throw meter.
  * Hold DROP (or E / Enter) and you step up to the edge and wind up: the meter charges and,
  * once full, wobbles off the top. Let go to throw: the fuller the meter, the deeper the
- * phone smashes and the more it pays (HIT_GRADES) - let go right at the top of a wobble
+ * slinky goes and the more it pays (HIT_GRADES) - let go right at the top of a wobble
  * for PERFECT. With the Auto Drop pass, a toggle under it throws for you every time
  * you're back (a plain drop, no meter). Jumping gives the throw up.
  *
@@ -150,7 +150,7 @@ export function RollButton() {
       // The grade letting go now would get, in its colour, and how deep it would go:
       // "LET GO! PERFECT x1.5". Both layers of the outlined text (StrokeText).
       const grade = hitGrade(charge)
-      const text = launch.full ? `LET GO! ${grade.label.replace(/ THROW|[!.]+$/g, '')} x${hitReach(charge).toFixed(1)}` : 'CHARGING...'
+      const text = launch.full ? `LET GO! ${grade.label.replace(/ DROP|[!.]+$/g, '')} x${hitReach(charge).toFixed(1)}` : 'CHARGING...'
       for (const layer of labelRef.current?.querySelectorAll('.pp-text-stroke, .pp-text-fill') ?? []) layer.textContent = text
       const fill = labelRef.current?.querySelector('.pp-text-fill')
       if (fill) fill.style.color = launch.full ? GRADE_COLORS[grade.id] : '#ffffff'
@@ -210,7 +210,7 @@ export function RollButton() {
               e.preventDefault()
               doGrab()
             }}
-            title="Drop your phone (hold, then let go)"
+            title="Drop your slinky (hold, then let go)"
             radius={22}
             border={6}
             style={{ width: u(330), height: u(130), touchAction: 'none' }}

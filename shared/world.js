@@ -12,10 +12,11 @@
 
 /**
  * The lobby is a little mountain-top plaza high above the clouds: you spawn at its south
- * end and a candy path runs north, 90 m, to the DROP ZONE at the cliff edge, where you
- * throw your phone down onto the hotel far below. The throw pads stand close together
- * along the east side (each better than the last as you go north) and the phone shop
- * along the west; the eggs and leaderboards are back by the spawn.
+ * end and a path runs north, 90 m, to the DROP ZONE at the top of the Great Staircase,
+ * where you drop your slinky down the stairs that run on and down the mountain, stage
+ * after stage. The practice stairs stand close together along the east side (each better
+ * than the last as you go north) and the slinky shop along the west; the eggs and
+ * leaderboards are back by the spawn.
  */
 export const SPAWN = { x: 0, z: 50 }
 
@@ -37,16 +38,17 @@ export const SLOPE_ANGLE = 0
 export const CANYON_HALF_WIDTH = 16
 
 /**
- * The yellow DROP ZONE (the template's roll zone) at the cliff edge: drops go from here.
- * Beyond its north edge the mountain falls away to the clouds, and the hotel far below.
+ * The yellow DROP ZONE (the template's roll zone) at the top of the stairs: drops go from
+ * here. Beyond its north edge the Great Staircase runs down the mountain.
  */
 export const ROLL_ZONE = { minX: -13, maxX: 13, minZ: -40, maxZ: -21 }
 /** Where you're put back after a drop: just short of the edge, facing it. */
 export const ROLL_RETURN = { x: 0, z: -27 }
 
 /**
- * Where you stand to throw: right at the edge, in the gap in the railing. Pressing DROP
- * anywhere in the zone walks you here for the throw (the server only checks the zone).
+ * The glowing disc in the middle of the DROP ZONE, by the gap in the railing. You can drop
+ * from anywhere in the zone (the server only checks the zone): the slinky goes down the
+ * lane of the stairs straight ahead of you. This is just the marker.
  */
 export const DROP_SPOT = { x: 0, z: -38.6 }
 /** The start arch's pillars, either side of the zone. */
@@ -105,9 +107,9 @@ export function padRect(index) {
 // --- Ball shop ----------------------------------------------------------------------
 
 /**
- * The ball shop: an open-air yard west of the plaza with two display stages, the
- * first twelve balls on the low front one and the next twelve on the higher back one,
- * and a big BALL SHOP sign behind. Both stages are low enough to walk straight onto.
+ * The slinky shop: an open-air yard west of the plaza with two display stages, the first
+ * eighteen slinkies on the low front one and the next eighteen on the higher back one,
+ * and a big SLINKY SHOP sign behind. Both stages are low enough to walk straight onto.
  */
 export const SHOP = { minX: -42, maxX: -16, minZ: -18, maxZ: 36 }
 export const SHOP_STAGES = [
@@ -118,19 +120,19 @@ export const SHOP_STAGES = [
 export const SHOP_SIGN = { x: -42.6, minZ: -14, maxZ: 32, top: 16 }
 /** Which way the sign faces: +1 east (towards the plaza). */
 export const SHOP_SIGN_FACING = 1
-export const STAND_SIZE = 4
+export const STAND_SIZE = 3.6
 
 /** Rows of display stands, nearest the plaza first: two rows on each stage. */
 const STAND_ROWS_X = [-20, -25.5, -33, -38.5]
 /** Stands per row, and how far apart along it. */
-const STANDS_PER_ROW = 6
-const STAND_PITCH = 9
+const STANDS_PER_ROW = 9
+const STAND_PITCH = 5.8
 
 /**
- * Twenty-four stands, six to a row. `row` (0-3, front to back) lets the labels above
- * them step up so nearer ones don't hide farther ones.
+ * Thirty-six stands, nine to a row (one per slinky, balance TIRES). `row` (0-3, front to
+ * back) lets the labels above them step up so nearer ones don't hide farther ones.
  */
-export const TIRE_STANDS = Array.from({ length: 24 }, (_, i) => {
+export const TIRE_STANDS = Array.from({ length: 36 }, (_, i) => {
   const row = Math.floor(i / STANDS_PER_ROW)
   return {
     index: i,
@@ -207,10 +209,10 @@ export const STATIC_COLLIDERS = [
   box(SPHINX_STAND.x, SPHINX_STAND.z, 3, 3),
   ...LEADERBOARDS.map((b) => box(b.x, b.z, 4.6, 0.5)),
   box(FREE_REWARD.x, FREE_REWARD.z, 1.4, 1.4),
-  // The treadmills' console blocks, and the barrier across each running track's back.
+  // Each practice staircase (the whole block, landing to foot), and the barrier behind it.
   ...Array.from({ length: PAD_COUNT }, (_, i) => ({
     minX: TABLE_NEAR_X,
-    maxX: ROBOT_X + 0.7,
+    maxX: COURT_BACK_X,
     minZ: padCenterZ(i) - TABLE_WIDTH / 2,
     maxZ: padCenterZ(i) + TABLE_WIDTH / 2,
   })),

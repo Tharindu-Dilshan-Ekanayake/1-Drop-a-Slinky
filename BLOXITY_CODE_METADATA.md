@@ -3,19 +3,24 @@ canDie: false
 hasScore: true
 ---
 
-# Phone Plunge: Boxity integration
+# Coil Cascade: Boxity integration
 
-The player cannot die: there is no death or game-over screen. You practise throwing on
-throw pads for Skill, walk to the DROP ZONE at the edge of the mountain-top lobby, hold DROP to charge
-the throw meter and let go: your phone falls through the clouds onto the hotel far below,
-smashes its glass roof and then floor after floor - more Skill smashes deeper, every
-metre pays Wins, and the meter (let go at the top of its wobble for PERFECT) adds up to
-x1.6 Wins and half as deep again. You always get another drop. Phones (24 kinds, bought
-with Wins) change how your phone looks and how much Skill each gain is worth.
+The player cannot die: there is no death or game-over screen. You drop your slinky down
+the practice stairs for Power, walk to the DROP ZONE at the top of the Great Staircase,
+hold DROP to charge the drop meter and let go: your slinky flips down the stairs step
+after step, faster and faster (curling into a rolling hoop at top speed), through sixty
+themed stages - Grass Hills, Palm Beach, Snowy Peaks ... The Beyond - with a gate and a
+number at the start of each. More Power goes further, every stair pays Wins, and the meter
+(let go at the top of its wobble for PERFECT) adds up to x1.6 Wins and half as far again.
+You always get another drop. Slinkies (36 kinds, bought with Wins at the slinky shop or in
+the Slinkies panel; the last 12 in Palm Beach only) change how your slinky looks, how much
+Power each gain is worth, and the aura it carries: every slinky has an aura of its own
+(an animated shell and particles), round your character, on its stand and on the stairs.
+World 2 (Palm Beach) has its own sixty stages, egg, practice stairs and Secret Star.
 
 Built on the Phone Plunge template: inside the code the old names stay (`health` is
-Skill, a `tire` is a phone, a `pad` is a throw pad, a `roll` is a drop and a `zone` is a
-hotel floor), so saves and the server protocol are unchanged.
+Power, a `tire` is a slinky, a `pad` is a practice staircase, a `roll` is a drop and a
+`zone` is a stage of the staircase), so saves and the server protocol are unchanged.
 
 ## Leaderboards
 
@@ -28,7 +33,7 @@ player leaves, each pod sends the changed scores of its verified players to
 |------------|------------------|--------------------------------------|---------|
 | `rebirths` | Rebirths         | `profile.rebirths`                   | number  |
 | `wins`     | Total Wins       | `profile.stats.totalWins`            | compact |
-| `distance` | Deepest Drop (m) | `floor(profile.stats.bestDistance)`  | compact |
+| `distance` | Longest Drop (stairs) | `floor(profile.stats.bestDistance)` (stairs) | compact |
 | `playtime` | Minutes Played   | `floor(profile.stats.playtime / 60)` | number  |
 
 All four are `order: desc`, `mode: best`, `reset: none`.
@@ -86,7 +91,7 @@ shows. Body proportions are applied by moving bones, so accessories follow them.
 |-------------------------|---------------------------------------------------------------|
 | `BLOXITY_REPORT_TOKEN`  | Token for leaderboard and room reports (none set = no reports) |
 | `MATCHMAKER_REPORT_URL` | Where the Open Rooms reporter posts (injected by Boxity hosting) |
-| `BLOXITY_GAME_ID`       | Hosted game id for reports (default `1-phone-drop`)              |
+| `BLOXITY_GAME_ID`       | Hosted game id for reports (default `1-drop-a-slinky`)              |
 | `LEGION_WEBHOOK_SECRET` | Must match the webhook's `x-legion-webhook-secret` header     |
 | `MONGODB_URI`           | Shared database for profiles, Gems grants and the save-ticket secret. Required when hosted: without it saves go to a file inside the pod and are lost on every redeploy (the server logs an error and `/api/health` shows `db: "sqlite"`) |
 | `BLOXITY_API_URL` etc.  | Platform URLs, injected by Boxity hosting; no defaults are written in code (`server/src/bloxityEnv.js`) |

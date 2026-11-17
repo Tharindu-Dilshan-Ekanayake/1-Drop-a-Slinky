@@ -15,8 +15,8 @@ import {
 } from '@shared/world'
 
 import { STYLE } from '../materials'
-import { addPhone } from '../phoneStyles'
-import { THROW_TARGET_X } from '../practice'
+import { PRACTICE_HALF, PRACTICE_RISE, PRACTICE_RUN, PRACTICE_STEPS, PRACTICE_TOP, PRACTICE_X0, THROW_TARGET_X } from '../practice'
+import { addSlinky } from '../slinkyStyles'
 import { venueOf } from '../sceneStyle'
 
 /**
@@ -26,9 +26,9 @@ import { venueOf } from '../sceneStyle'
 
 /**
  * Per-pad look, in pad order (matches PADS in shared/balance.js): the mat's base, top,
- * glowing ring and centre emblem, the board's frame and screen, the lane's floor, and the
- * colour of its labels. `beach` ones (Palm Beach's surf pads) have a surfboard and palm
- * on top of their board.
+ * glowing ring and centre emblem, the board's frame and screen, the floor round the
+ * stairs, and the colour of its labels. `beach` ones (Palm Beach's surf stairs) have a
+ * surfboard and palm on top of their board.
  */
 export const PAD_THEMES = [
   { base: '#0f8a7a', top: '#2fd6b8', ring: '#bffff0', emblem: '#ffffff', rail: '#0f9a88', court: '#127a6c', screen: '#bffff0', text: '#5fffe0' },
@@ -74,43 +74,54 @@ function buildCourt(blocks, z, theme) {
   blocks.addOn(COURT_BACK_X, 0.75, z, 0.26, 0.08, COURT_HALF * 2, theme.ring, STYLE.GLOW)
 }
 
-/** Spare phones sticking up out of each pad's crate, in their colours. */
-const CRATE_PHONES = ['#3a6bff', '#ff5a7a', '#2fc6ff', '#ffd21f']
+/** Spare slinkies in each pad's crate, in their colours. */
+const CRATE_SLINKIES = ['#3a6bff', '#ff5a7a', '#2fc6ff', '#ffd21f']
 
 /**
- * A pad's throwing lane (the thrower stands on the mat facing east and throws down it,
- * practice.js): a glowing throw line on the mat, a wooden crate of spare phones beside the
- * spot, chevrons down the lane and, at its far end, the target - red and white rings with
- * a glowing bullseye - flat on the floor where the practice phones land; then the big
- * backboard the pad's multiplier label (labels/lobbyLabels.js) hangs in front of.
+ * A pad's practice staircase (the tosser stands on the mat facing east and tosses onto its
+ * landing, practice.js): a glowing toss line on the mat, a crate of spare slinkies beside
+ * the spot, the staircase itself - a landing and PRACTICE_STEPS steps down, in the pad's
+ * colours with glowing noses - and at its foot the target, red and white rings with a
+ * glowing bullseye, where the practice slinkies end up; then the big backboard the pad's
+ * multiplier label (labels/lobbyLabels.js) hangs in front of.
  *
  * Everything east of x = TABLE_NEAR_X stays inside the pad's static collider
- * (shared/world.js): the lane is for phones, not for walking down.
+ * (shared/world.js): the stairs are for slinkies, not for walking down.
  */
 function buildThrowLane(blocks, props, z, theme) {
   const top = PAD_HEIGHT
   blocks.addOn(PAD_X + 1.55, top + 0.01, z, 0.2, 0.05, 3.4, '#ffffff', STYLE.GLOW)
-  // The crate of spare phones, behind and to the left of where you stand.
+  // The crate of spare slinkies, behind and to the left of where you stand.
   const cx = PAD_X - 1.3
   const cz = z - 1.75
   blocks.addOn(cx, top, cz, 1.2, 0.5, 0.8, '#c98f52', STYLE.SMOOTH)
-  for (const dz of [-0.36, 0.36]) blocks.addOn(cx, top + 0.1, cz + dz, 1.24, 0.08, 0.1, '#8a5a32', STYLE.SMOOTH)
-  CRATE_PHONES.forEach((color, i) => {
+  // Bands round the crate, standing well proud of its sides.
+  for (const dz of [-0.37, 0.37]) blocks.addOn(cx, top + 0.1, cz + dz, 1.3, 0.08, 0.14, '#8a5a32', STYLE.SMOOTH)
+  // Each a short stack of coils as boxes (a dozen triangles a coil: nine crates of them).
+  CRATE_SLINKIES.forEach((color, i) => {
     const px = cx - 0.39 + i * 0.26
-    blocks.add(px, top + 0.62, cz + (i % 2 ? 0.12 : -0.1), 0.2, 0.42, 0.07, color, STYLE.SMOOTH, 0.15 * (i - 1.5), 0.1 * (i % 2 ? 1 : -1))
-    blocks.add(px, top + 0.66, cz + (i % 2 ? 0.12 : -0.1) - 0.04, 0.15, 0.3, 0.02, '#bff6ff', STYLE.GLOW, 0.15 * (i - 1.5), 0.1 * (i % 2 ? 1 : -1))
+    const pz = cz + (i % 2 ? 0.12 : -0.1)
+    for (let k = 0; k < 3; k += 1) blocks.addOn(px, top + 0.5 + k * 0.07, pz, 0.2, 0.05, 0.2, k % 2 ? '#ffffff' : color, STYLE.SMOOTH, 0.4 * k)
   })
-  // Chevrons down the lane, pointing at the target.
-  for (let k = 0; k < 2; k += 1) {
-    const x = PAD_X + 3.6 + k * 1.1
-    for (const side of [-1, 1]) blocks.add(x, 0.07, z + side * 0.42, 0.9, 0.03, 0.2, theme.ring, STYLE.GLOW, side * 0.75)
+  // The staircase: a landing, then the steps down to the floor, each a solid block in the
+  // pad's colours with a glowing strip along its nose, a rail either side.
+  // Steps meet exactly (overlapping, their sides would share a plane and flicker); each
+  // nose stands 5 cm proud of its riser and 6 cm over its tread, its ends buried in the
+  // rails, and the rails stand 5 cm in from the sides.
+  for (let i = 0; i <= PRACTICE_STEPS; i += 1) {
+    const x = PRACTICE_X0 - i * PRACTICE_RUN
+    const h = PRACTICE_TOP - i * PRACTICE_RISE
+    blocks.addOn(x, 0, z, PRACTICE_RUN, h, PRACTICE_HALF * 2, i % 2 ? theme.top : theme.base, i === 0 ? STYLE.PLATE : STYLE.STUDS)
+    blocks.addOn(x - PRACTICE_RUN / 2 + 0.07, h - 0.14, z, 0.24, 0.2, (PRACTICE_HALF - 0.12) * 2, theme.ring, STYLE.GLOW)
+    for (const side of [-1, 1]) blocks.addOn(x, h, z + side * (PRACTICE_HALF - 0.13), PRACTICE_RUN - 0.04, 0.3, 0.16, theme.rail, STYLE.SMOOTH)
   }
-  // The target: rings stepping up a little each, the bullseye glowing.
+  // The target at the foot of the stairs: rings stepping up a little each, the bullseye glowing.
   const tx = THROW_TARGET_X
-  props.add(DISC, { position: [tx, 0.07, z], scale: [1.3, 0.04, 1.3], color: '#ffffff' })
-  props.add(DISC, { position: [tx, 0.09, z], scale: [1.05, 0.04, 1.05], color: '#ff3b3b' })
-  props.add(DISC, { position: [tx, 0.11, z], scale: [0.75, 0.04, 0.75], color: '#ffffff' })
-  props.add(DISC, { position: [tx, 0.13, z], scale: [0.42, 0.04, 0.42], color: theme.ring, style: STYLE.GLOW })
+  // Each ring 4 cm over the one under it: any closer and they flicker seen from afar.
+  props.add(DISC, { position: [tx, 0.07, z], scale: [0.55, 0.04, 0.55], color: '#ffffff' })
+  props.add(DISC, { position: [tx, 0.11, z], scale: [0.43, 0.04, 0.43], color: '#ff3b3b' })
+  props.add(DISC, { position: [tx, 0.15, z], scale: [0.3, 0.04, 0.3], color: '#ffffff' })
+  props.add(DISC, { position: [tx, 0.19, z], scale: [0.17, 0.04, 0.17], color: theme.ring, style: STYLE.GLOW })
 
   // The backboard behind it, kept small and high so the follow camera behind the trainee
   // (west of the mat, looking east) sees it over their head rather than a wall of it: a
@@ -124,7 +135,8 @@ function buildThrowLane(blocks, props, z, theme) {
   blocks.addOn(bx - 0.23, by + 0.2, z, 0.08, bh - 0.4, 3.8, '#141a3a', STYLE.SMOOTH)
   blocks.addOn(bx - 0.28, by + 0.12, z, 0.06, 0.1, 3.9, theme.ring, STYLE.GLOW)
   blocks.addOn(bx - 0.28, by + bh - 0.22, z, 0.06, 0.1, 3.9, theme.ring, STYLE.GLOW)
-  for (const s of [-1, 1]) blocks.addOn(bx - 0.28, by + 0.2, z + s * 1.9, 0.06, bh - 0.4, 0.1, theme.ring, STYLE.GLOW)
+  // The upright strips a step proud of the crossbars, and clear of the panel's top and foot.
+  for (const s of [-1, 1]) blocks.addOn(bx - 0.32, by + 0.26, z + s * 1.9, 0.06, bh - 0.52, 0.1, theme.ring, STYLE.GLOW)
   if (theme.beach) {
     // A surfboard standing on end on top, and a little palm beside it.
     props.add(BALL, { position: [bx, by + bh + 1.0, z - 0.7], scale: [0.14, 0.95, 0.34], color: theme.ring })
@@ -133,14 +145,14 @@ function buildThrowLane(blocks, props, z, theme) {
     blocks.add(bx, by + bh + 1.62, z + 0.9, 1.6, 0.18, 0.5, '#2fae4a', STYLE.SMOOTH, 0.4)
     blocks.add(bx, by + bh + 1.66, z + 0.9, 0.5, 0.16, 1.6, '#4cd36a', STYLE.SMOOTH, 0.4)
   } else {
-    // A phone lying on its side on top, its screen to the pad.
-    addPhone(props, 'ice', { position: [bx, by + bh + 0.42, z], rotation: [0, 0, Math.PI / 2], scale: 1.5 })
+    // A big rainbow slinky standing on top of the board.
+    addSlinky(props, 'pizza', { position: [bx, by + bh, z], scale: 1.3, rings: 9, low: true })
   }
 }
 
 /**
- * The throw pads: round two-tier mats in the pad's colours with a glowing ring round the
- * top, each with its throwing lane and target beyond. The rounded parts go
+ * The practice stairs: round two-tier mats in the pad's colours with a glowing ring round
+ * the top, each with its little staircase and target beyond. The rounded parts go
  * into the world's props, the rest into its blocks: no draw calls of their own.
  */
 export function buildPads(blocks, props) {
@@ -164,8 +176,8 @@ export function buildPads(blocks, props) {
 const WHITE = '#f4f7fb'
 
 /**
- * The arm shop: two open display stages (the stands on them are TireShop's) and the big
- * ARM SHOP sign behind, built like the start arch - white decks on a yellow band with
+ * The slinky shop: two open display stages (the stands on them are SlinkyShop's) and the
+ * big SLINKY SHOP sign behind, built like the start arch - white decks on a yellow band with
  * gold light strips round the edges. `detail` (off on LOW) adds the sign's bulbs.
  *
  * No two faces here share a plane: every layer stands a clear step proud of what it

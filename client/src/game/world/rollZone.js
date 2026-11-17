@@ -3,7 +3,7 @@ import { CylinderGeometry, SphereGeometry } from 'three'
 import { DROP_SPOT, ROLL_ARCH, ROLL_ZONE } from '@shared/world'
 
 import { STYLE } from '../materials'
-import { addPhone } from '../phoneStyles'
+import { addSlinky } from '../slinkyStyles'
 import { venueOf } from '../sceneStyle'
 
 /** The DROP ZONE strip: the one gameplay yellow, the same in every world. */
@@ -25,13 +25,13 @@ function addBolt(blocks, x, y, z, flip, color) {
 }
 
 /**
- * The DROP ZONE at the cliff edge: the yellow strip across the end of the plaza (painted
- * with its name, see signs.js) with navy chevrons pointing out over the edge, a glowing
- * pad at each end, a railing along the edge with a gap in the middle where a little
- * platform juts out over the drop (the spot you throw from, DROP_SPOT), and a big
+ * The DROP ZONE at the top of the Great Staircase: the yellow strip across the end of the
+ * plaza (painted with its name, see signs.js) with navy chevrons pointing down the stairs,
+ * a glowing pad at each end, a railing along the edge with a gap in the middle where the
+ * stairs begin (the spot you drop from, DROP_SPOT, just this side of it), and a big
  * yellow-and-navy arch over it all with its sign between lightning bolts, crowned by a
- * giant phone - in the venue's colours (turquoise and teal with coral at Palm Beach); the
- * strip itself is the same yellow everywhere.
+ * giant slinky arching over it - in the venue's colours (turquoise and teal with coral at
+ * Palm Beach); the strip itself is the same yellow everywhere.
  *
  * Boxes go into the world's block set and the round parts into its props, so the whole
  * thing rides in those two draw calls. `detail` (off on LOW) adds the bulbs.
@@ -54,7 +54,8 @@ export function buildRollZone(blocks, props, { detail = true, world = 0 } = {}) 
   // Chevrons on the strip, pointing down the runway.
   for (const x of [-9, 9]) {
     for (const side of [-1, 1]) {
-      blocks.add(x + side * 0.7, 0.12, cz, 2.2, 0.04, 0.6, c.base, STYLE.SMOOTH, side * 0.75)
+      // The two halves of a chevron cross at its tip: one a little higher, so their tops don't share a plane.
+      blocks.add(x + side * 0.7, side > 0 ? 0.16 : 0.12, cz, 2.2, 0.04, 0.6, c.base, STYLE.SMOOTH, side * 0.75)
     }
   }
   // Glowing pads at both ends.
@@ -64,30 +65,30 @@ export function buildRollZone(blocks, props, { detail = true, world = 0 } = {}) 
     props.add(DISC, { position: [x, 0.15, cz + 0.3], scale: [1.6, 0.06, 2.2], color: STRIP, style: STYLE.GLOW })
   }
 
-  // The cliff edge: a railing along it with a gap in the middle, and there a little
-  // platform jutting out over the drop with a glowing ring where you stand to throw.
+  // The top of the stairs: a railing along the edge with a gap in the middle as wide as
+  // the staircase, and a glowing ring where you stand to drop.
   const edgeZ = minZ + 0.3
   for (const side of [-1, 1]) {
-    const from = side * 2.6
+    const from = side * 6.2
     const to = side * (w / 2 + 3)
     const mid = (from + to) / 2
     const len = Math.abs(to - from)
     blocks.addOn(mid, 0.1, edgeZ, len, 0.12, 0.5, c.base, STYLE.SMOOTH)
     blocks.addOn(mid, 1.05, edgeZ, len, 0.16, 0.24, RAIL, STYLE.SMOOTH)
-    blocks.addOn(mid, 0.55, edgeZ, len, 0.08, 0.14, RAIL, STYLE.SMOOTH)
-    for (let x = Math.min(from, to); x <= Math.max(from, to) + 0.01; x += 2.2) blocks.addOn(x, 0.1, edgeZ, 0.22, 1.0, 0.22, RAIL, STYLE.SMOOTH)
-    blocks.addOn(from, 0.1, edgeZ, 0.5, 1.6, 0.5, STRIP, STYLE.STRIPES)
+    blocks.addOn(mid, 0.55, edgeZ, len, 0.08, 0.1, RAIL, STYLE.SMOOTH)
+    // Posts a few cm inside the rails' faces, the end post a few cm outside the base's.
+    for (let x = Math.min(from, to); x <= Math.max(from, to) + 0.01; x += 2.2) blocks.addOn(x, 0.1, edgeZ, 0.18, 1.0, 0.16, RAIL, STYLE.SMOOTH)
+    blocks.addOn(from, 0.1, edgeZ, 0.58, 1.6, 0.58, STRIP, STYLE.STRIPES)
     props.add(BALL, { position: [from, 1.95, edgeZ], scale: [0.4, 0.4, 0.4], color: c.crest, style: STYLE.GLOW })
   }
-  blocks.addOn(DROP_SPOT.x, -0.4, minZ - 1.2, 4.6, 0.55, 3.4, c.base, STYLE.SMOOTH)
-  blocks.addOn(DROP_SPOT.x, 0.15, minZ - 1.1, 4.2, 0.06, 3.0, STRIP, STYLE.PLATE)
   props.add(DISC, { position: [DROP_SPOT.x, 0.13, DROP_SPOT.z], scale: [1.2, 0.04, 1.2], color: '#ffffff' })
   props.add(DISC, { position: [DROP_SPOT.x, 0.17, DROP_SPOT.z], scale: [0.95, 0.04, 0.95], color: c.crest, style: STYLE.GLOW })
-  // Arrows on the strip pointing out over the edge.
+  // Arrows on the strip pointing down the stairs.
   const ARROWS = ['#ff4a4a', '#ff9a1e', '#ffe23a']
   for (let i = 0; i < 3; i += 1) {
     const z = DROP_SPOT.z + 3 + i * 2.6
-    for (const side of [-1, 1]) blocks.add(DROP_SPOT.x + side * 0.6, 0.15, z, 1.6, 0.06, 0.36, ARROWS[i], STYLE.GLOW, -side * 0.75)
+    // Each arrow's halves cross at its tip: one a little higher, so their tops don't share a plane.
+    for (const side of [-1, 1]) blocks.add(DROP_SPOT.x + side * 0.6, side > 0 ? 0.19 : 0.15, z, 1.6, 0.06, 0.36, ARROWS[i], STYLE.GLOW, -side * 0.75)
   }
 
   // The start arch: striped pillars either side, a beam across the top carrying the
@@ -121,9 +122,8 @@ export function buildRollZone(blocks, props, { detail = true, world = 0 } = {}) 
     }
   }
 
-  // The crown: a giant phone standing on the beam, tipping over the edge, a gold ring
-  // glowing behind it.
+  // The crown: a giant rainbow slinky standing on the beam, a gold ring glowing behind it.
   const baseY = ARCH_TOP + 1.4
-  addPhone(props, 'infinity', { position: [0, baseY + 3.6, archZ], rotation: [Math.PI / 2 - 0.25, 0, 0.2], scale: 7 })
-  props.add(DISC, { position: [0, baseY + 3.8, archZ - 1.4], rotation: [Math.PI / 2, 0, 0], scale: [4.6, 0.3, 4.6], color: c.crest, style: STYLE.GLOW })
+  addSlinky(props, 'pizza', { position: [0, baseY, archZ], scale: 4.2, rings: 12 })
+  props.add(DISC, { position: [0, baseY + 2.4, archZ - 2.6], rotation: [Math.PI / 2, 0, 0], scale: [4.4, 0.3, 4.4], color: c.crest, style: STYLE.GLOW })
 }

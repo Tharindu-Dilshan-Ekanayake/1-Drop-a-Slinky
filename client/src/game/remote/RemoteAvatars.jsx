@@ -8,7 +8,7 @@ import { remotePlayers } from '../../net/remotePlayers'
 import { getQuality } from '../../store/quality'
 import { emoteFromAnim } from '../../bloxity/emotes'
 import { asToyInstance } from '../blocks'
-import { handPhoneGeometry } from '../handPhone'
+import { handSlinkyGeometry } from '../handSlinky'
 import { releasePoint, spawnThrow, THROW_RELEASE, tossTarget } from '../practice'
 import { sharedMaterials } from '../materials'
 import { BloxityAvatar } from '../PlayerAvatar'
@@ -36,7 +36,7 @@ function RemoteAvatar({ sessionId, look }) {
   const phoneRef = useRef(null)
   const motionRef = useRef({ time: 0, speed: 0, grounded: true, maxSpeed: MAX_SPEED, vy: 0, stride: 0, windup: 0, throwT: 0, tossF: 1 })
   /** Their phone in their hand: one mesh, its geometry swapped when they change phone. */
-  const phone = useMemo(() => asToyInstance(handPhoneGeometry('bicycle'), sharedMaterials().toy), [])
+  const phone = useMemo(() => asToyInstance(handSlinkyGeometry('bicycle'), sharedMaterials().toy), [])
   useEffect(() => () => phone.dispose(), [phone])
 
   useFrame((_state, rawDelta) => {
@@ -53,7 +53,7 @@ function RemoteAvatar({ sessionId, look }) {
     m.windup = 0
     m.wobble = 0
     m.throwT = 0
-    const geometry = handPhoneGeometry(r.tireId || 'bicycle')
+    const geometry = handSlinkyGeometry(r.tireId || 'bicycle')
     const held = phoneRef.current
     if (held && held.geometry !== geometry) held.geometry = geometry
     if (handRef.current) handRef.current.visible = !(r.flying && r.throwT >= 1)

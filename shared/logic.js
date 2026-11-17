@@ -259,7 +259,7 @@ export function gainMultiplier(profile, now) {
   return rebirthMultiplier(profile.rebirths) * petMultiplier(profile) * healthBoostMultiplier(profile, now) * starMultiplier(profile)
 }
 
-/** Health from one gain anywhere but a pad: your tire's power, multiplied. */
+/** Power from one gain anywhere but practice stairs: your slinky's power, multiplied. */
 export const baseGain = (profile, now) => tidy(tireById(profile.equippedTire).power * gainMultiplier(profile, now))
 
 /** Health from one training step on pad `index`. */
@@ -295,7 +295,7 @@ export function applyTrain(profile, index, now) {
   return { ok: true, ...addHealth(profile, padGain(profile, index, now)) }
 }
 
-/** One throw of your phone anywhere but a throw pad: your phone's own gain. */
+/** One practice toss anywhere but on practice stairs: your slinky's own gain. */
 export function applyThrow(profile, now) {
   return { ok: true, ...addHealth(profile, baseGain(profile, now)) }
 }
@@ -344,13 +344,12 @@ export function zoneIndexAt(meter) {
 }
 
 /**
- * How deep a drop with `health` (Skill) smashes: its full reach. `broken` is how many
- * floors it smashed into past the first (the name stayed from the template's walls);
- * `blocked` is always -1.
+ * How far a drop with `health` (Power) goes: its full reach. `broken` is how many stages
+ * it went into past the first (the name stayed from the template's walls); `blocked` is
+ * always -1.
  */
 export function rollOutcome(health, reachFactor = 1) {
-  // The throw scales the depth under the glass roof, never the fall above it: every drop
-  // still reaches the roof and smashes into the hotel.
+  // The drop meter scales the distance down the stairs your Power alone would reach.
   const reach = DROP_ROOF + (rollReach(health) - DROP_ROOF) * reachFactor
   let broken = 0
   for (let i = 1; i < ZONES.length && ZONES[i].start <= reach; i += 1) broken += 1
@@ -541,12 +540,14 @@ export function usePortal(profile) {
 
 export function buyTire(profile, tireId) {
   const tire = TIRES.find((t) => t.id === tireId)
-  if (!tire) return { ok: false, error: 'Unknown arms' }
+  if (!tire) return { ok: false, error: 'Unknown slinky' }
   if (profile.ownedTires.includes(tireId)) return equipTire(profile, tireId)
   const previous = TIRES[tireIndex(tireId) - 1]
   if (previous && !profile.ownedTires.includes(previous.id)) {
     return { ok: false, error: `Buy the ${previous.name} first!` }
   }
+  // A world's own slinky is sold in that world only.
+  if (tire.world !== undefined && (profile.world || 0) !== tire.world) return { ok: false, error: 'Sold in Palm Beach only!' }
   if (profile.wins < tire.cost) return { ok: false, error: 'Not enough Wins!' }
   profile.wins -= tire.cost
   profile.ownedTires.push(tireId)
@@ -555,7 +556,7 @@ export function buyTire(profile, tireId) {
 }
 
 export function equipTire(profile, tireId) {
-  if (!profile.ownedTires.includes(tireId)) return { ok: false, error: 'You don’t own those arms' }
+  if (!profile.ownedTires.includes(tireId)) return { ok: false, error: 'You don’t own that slinky' }
   profile.equippedTire = tireId
   return { ok: true, equipped: true, tireId }
 }

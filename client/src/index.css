@@ -589,3 +589,24 @@ canvas {
     transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(220deg);
   }
 }
+
+/* A slinky's aura behind its picture (Slinkies panel): a soft, slow pulse. */
+.pp-aura {
+  animation: pp-aura-pulse 2.4s ease-in-out infinite;
+}
+@keyframes pp-aura-pulse {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-aura {
+    animation: none;
+  }
+}

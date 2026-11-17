@@ -4,13 +4,13 @@ import { Quaternion, Vector3 } from 'three'
 
 import { TRAIN_INTERVAL } from '@shared/balance'
 import { isPadUnlocked } from '@shared/logic'
-import { clampToWalkable, DROP_SPOT, groundHeightAt, PAD_YAW, padAt, STATIC_COLLIDERS } from '@shared/world'
+import { clampToWalkable, groundHeightAt, PAD_YAW, padAt, STATIC_COLLIDERS } from '@shared/world'
 
 import { sfx } from '../audio/sfx'
 import { getGame, useGame } from '../store/game'
 import ErrorBoundary from '../ui/ErrorBoundary'
 import FallbackAvatar from './FallbackAvatar'
-import HeldPhone from './HeldPhone'
+import HeldSlinky from './HeldSlinky'
 import PlayerAvatar from './PlayerAvatar'
 import { releasePoint, spawnThrow, THROW_RELEASE, TOSS_TIME, tossTarget } from './practice'
 import { cancelPull, isPulling, launch, updatePull } from './launch'
@@ -78,12 +78,12 @@ function pushOut(pos, rect) {
  * rectangular walls, which a circle-vs-rect push-out handles exactly. That saves the
  * ~2 MB Rapier WASM download and keeps the active rigid body count at zero.
  *
- * Holding DROP in the DROP ZONE (RollButton, launch.js) steps you up to the edge, facing
- * out over it, and winds up the throw; letting go sends it. While the phone falls your
- * logical position stays at the edge (what the server checks) and your avatar follows
- * through the throw, empty-handed, until you're back. Every click, tap or THROW throws your
- * phone for Skill (toss.js): on a throw pad you face down its lane and it flies at the
- * target, anywhere else a few metres ahead (practice.js).
+ * Holding DROP in the DROP ZONE (RollButton, launch.js) steps you up to the top of the
+ * stairs, facing down them, and winds up the toss; letting go sends it. While the slinky
+ * goes down your logical position stays at the top (what the server checks) and your
+ * avatar follows through the toss, empty-handed, until you're back. Every click, tap or
+ * TOSS tosses your slinky for Power (toss.js): on practice stairs you face them and it
+ * flips down them, anywhere else it hops along the ground ahead of you (practice.js).
  *
  * Reads and writes `runtime.player`; never touches React state per frame.
  *
@@ -96,7 +96,7 @@ export function Player({ onAvatarReady }) {
   const keys = useKeyboard()
   const velocity = useRef(new Vector3())
   const vy = useRef(0)
-  const phoneId = useGame((s) => s.profile.equippedTire)
+  const slinkyId = useGame((s) => s.profile.equippedTire)
 
   /** Handed to the avatar so it can pose itself. A ref: written every frame. */
   const motionRef = useRef({
@@ -137,9 +137,8 @@ export function Player({ onAvatarReady }) {
     const throwing = !roll.active && isPulling()
     updatePull(now)
     if (throwing && launch.snap) {
-      // Just started: step up to the edge, facing out over it.
+      // Just started: stop right where you are (anywhere in the DROP ZONE) and wind up.
       launch.snap = false
-      pos.set(DROP_SPOT.x, groundHeightAt(DROP_SPOT.x, DROP_SPOT.z), DROP_SPOT.z)
       velocity.current.set(0, 0, 0)
     }
 
@@ -290,7 +289,7 @@ export function Player({ onAvatarReady }) {
             <PlayerAvatar onReady={onAvatarReady} targetHeight={PLAYER_HEIGHT} motionRef={motionRef} handRef={handRef} />
           </Suspense>
         </ErrorBoundary>
-        <HeldPhone ref={handRef} phoneId={phoneId} />
+        <HeldSlinky ref={handRef} slinkyId={slinkyId} />
       </group>
     </group>
   )

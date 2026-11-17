@@ -91,14 +91,14 @@ export const VENUES = [
     surround: '#3fb23f',
     strip: PALETTE.turf,
     shopFloor: PALETTE.shopFloor,
-    logo: { rim: '#2fc6ff', ring: '#16233f', inner: '#ff7a1a', top: 'SKY', bottom: 'CITY' },
+    logo: { rim: '#2fc6ff', ring: '#16233f', inner: '#ff7a1a', top: 'SKY', bottom: 'SUMMIT' },
     /**
      * The skyline round the lobby: glass towers in building-sized blocks of colour
      * (`mixed`), their windows lit, with antennas, air conditioners, water tanks and
      * little gardens on their roofs.
      */
     hills: { rock: ['#8fc4ff', '#f4f7fb', '#5fa8f0', '#bfe6ff', '#ffb37a', '#3f7fd8'], style: STYLE_WINDOWS, mixed: true, trees: 'roof' },
-    endNorth: 'DROP IT!',
+    endNorth: 'GO DOWN!',
     /** The start arch and the ball shop's stages and sign. */
     arch: { pillar: '#ff7a1a', base: '#16233f', glow: '#bff6ff', crest: '#2fc6ff' },
     shop: { band: '#2fc6ff', strip: '#bff6ff', post: '#ff7a1a', panel: '#16233f' },

@@ -12,9 +12,9 @@ import StrokeText from '../StrokeText'
 import { GRADIENTS, u } from './style'
 
 /**
- * While your phone falls: the depth in big numbers at the top, "-1,234 m", the name of the
- * floor it's smashing into under it, and down the right a tall depth bar with your phone
- * sliding down it and a BEST mark where your deepest drop got to. All written straight to
+ * While your slinky goes down the stairs: the stairs so far in big numbers at the top,
+ * "1,234 STAIRS", the stage it's in under it, and down the right a tall bar with your
+ * slinky sliding down it and a BEST mark where your longest drop got to. All written straight to
  * the DOM from the frame loop (see hudLink), never through React - and the whole counter
  * is contained, so those writes re-lay-out this box alone.
  */
@@ -32,10 +32,10 @@ function DistanceCounter() {
       <div className="absolute left-1/2 flex -translate-x-1/2 flex-col items-center" style={{ top: u(40) }}>
         <span className="pp-text" style={{ fontSize: u(116), lineHeight: 1 }}>
           <span data-distance aria-hidden="true" className="pp-text-stroke" style={{ WebkitTextStrokeWidth: u(22) }}>
-            0 m
+            0 STAIRS
           </span>
           <span data-distance className="pp-text-fill" style={{ backgroundImage: DISTANCE_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-            0 m
+            0 STAIRS
           </span>
         </span>
         <span className="pp-text" style={{ fontSize: u(70), marginTop: u(4) }}>
@@ -43,9 +43,9 @@ function DistanceCounter() {
           <span data-zone data-zone-fill className="pp-text-fill" style={{ WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }} />
         </span>
       </div>
-      {/* The depth bar down the right: sky blue to the roof, then the hotel. */}
+      {/* The bar down the right: the staircase's colours, green hills to deep space. */}
       <div className="absolute" style={{ right: u(60), top: u(150), width: u(30), height: u(BAR_HEIGHT) }}>
-        <div className="absolute inset-0" style={{ border: `${u(5)} solid #111`, borderRadius: u(16), background: 'linear-gradient(180deg, #ffd21f 0%, #ffb21f 18%, #2a2f3a 22%, #1d1f22 100%)' }} />
+        <div className="absolute inset-0" style={{ border: `${u(5)} solid #111`, borderRadius: u(16), background: 'linear-gradient(180deg, #7ee86a 0%, #ffe8b8 12%, #d8e8ff 22%, #ffc070 32%, #ff9fd0 45%, #4a3434 55%, #9a7aff 65%, #24243e 78%, #3a1a6a 100%)' }} />
         {prevBest > 0 && (
           <div className="absolute flex items-center" style={{ right: u(-6), top: `${Math.min(100, (prevBest / scale) * 100)}%`, transform: 'translateY(-50%)', gap: u(6) }}>
             <span className="flex items-center justify-center" style={{ fontSize: u(28), padding: `${u(2)} ${u(12)}`, borderRadius: u(14), border: `${u(4)} solid #111`, background: GRADIENTS.goldButton, marginRight: u(4) }}>
@@ -92,11 +92,12 @@ function FlyingTrophies() {
 }
 
 /**
- * Once the phone stops: "1,433 m" with the floor it smashed down to and "+60 Wins" under
- * it, and a big tilted NEW BEST! over them when it's your deepest drop yet (by how much).
+ * Once the slinky stops: "1,433 stairs" with the stage it got to and "+60 Wins" under it,
+ * and a big tilted NEW BEST! over them when it's your longest drop yet (by how much).
  */
 function RollResult({ result }) {
-  const floor = zones()[zoneIndexAt(result.distance)]
+  const index = zoneIndexAt(result.distance)
+  const floor = zones()[index]
   const gained = result.prevBest > 0 ? result.distance - result.prevBest : 0
   return (
     <>
@@ -111,7 +112,7 @@ function RollResult({ result }) {
         {floor && (
           <div style={{ fontSize: u(60), transform: 'rotate(-4deg)' }}>
             <StrokeText stroke={u(12)} gradient={DISTANCE_GRADIENT}>
-              {floor.name}
+              {`STAGE ${index + 1} · ${floor.name}`}
             </StrokeText>
           </div>
         )}
@@ -145,7 +146,7 @@ function RollResult({ result }) {
 /** How long a toast stays up. */
 const TOAST_MS = 3500
 
-/** A celebration banner across the middle: a new floor, an ad reward, a Gems purchase. */
+/** A celebration banner across the middle: a new stage, an ad reward, a Gems purchase. */
 function Toast() {
   const toast = useGame((s) => s.toast)
   useEffect(() => {
@@ -170,7 +171,7 @@ function Toast() {
 }
 
 export function RollOverlay() {
-  // The depth counter is for the fall; the result takes over once the phone stops.
+  // The stair counter is for the drop; the result takes over once the slinky stops.
   const rolling = useGame((s) => Boolean(s.roll && !s.rollResult))
   const result = useGame((s) => s.rollResult)
   return (

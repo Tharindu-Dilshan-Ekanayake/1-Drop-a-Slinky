@@ -1,4 +1,4 @@
-import { MAX_EQUIPPED_PETS } from '@shared/balance'
+import { MAX_EQUIPPED_PETS, TIRES } from '@shared/balance'
 import { questsReady } from '@shared/engage'
 import { rebirthProgress } from '@shared/logic'
 
@@ -16,6 +16,7 @@ const TILE_GRADIENTS = {
   items: 'linear-gradient(180deg, #ffb8c6 0%, #ff5f86 50%, #d92b5a 100%)',
   store: 'linear-gradient(180deg, #c9ff96 0%, #6fe04a 50%, #26ad3c 100%)',
   quest: 'linear-gradient(180deg, #e2c4ff 0%, #a46bff 50%, #6a2fd6 100%)',
+  tire: 'linear-gradient(180deg, #fff0a8 0%, #ffb0e0 50%, #b07aff 100%)',
 }
 
 function MenuTile({ icon, label, onClick, alert, top }) {
@@ -38,8 +39,9 @@ function MenuTile({ icon, label, onClick, alert, top }) {
 }
 
 /**
- * The menu on the left, under the stats: Rebirth (with % to next), Pets, Items, Store,
- * today's Quests (a badge while one's ready to claim) and the free Gift.
+ * The menu on the left, under the stats: Rebirth (with % to next), Pets, Slinkies (a badge
+ * while you can afford the next one), Items, Store, today's Quests (a badge while one's
+ * ready to claim) and the free Gift.
  */
 export function LeftMenu() {
   const togglePanel = useGame((s) => s.togglePanel)
@@ -47,6 +49,10 @@ export function LeftMenu() {
   const petAlert = useGame((s) => s.profile.equippedPets.length < Math.min(MAX_EQUIPPED_PETS, s.profile.pets.length))
   const itemAlert = useGame((s) => Object.values(s.profile.items).some((n) => n > 0))
   const questAlert = useGame((s) => questsReady(s.profile, Date.now()))
+  const slinkyAlert = useGame((s) => {
+    const next = TIRES.find((t) => !s.profile.ownedTires.includes(t.id))
+    return Boolean(next && s.profile.wins >= next.cost && (next.world === undefined || next.world === (s.profile.world || 0)))
+  })
 
   return (
     <div
@@ -61,6 +67,7 @@ export function LeftMenu() {
         onClick={() => togglePanel('rebirth')}
       />
       <MenuTile icon="pets" label="Pets" alert={petAlert} onClick={() => togglePanel('pets')} />
+      <MenuTile icon="tire" label="Slinkies" alert={slinkyAlert} onClick={() => togglePanel('slinkies')} />
       <MenuTile icon="items" label="Items" alert={itemAlert} onClick={() => togglePanel('items')} />
       <MenuTile icon="store" label="Store" alert onClick={() => togglePanel('store')} />
       <MenuTile icon="quest" label="Quests" alert={questAlert} onClick={() => togglePanel('quests')} />

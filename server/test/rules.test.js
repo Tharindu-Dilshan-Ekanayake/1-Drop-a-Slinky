@@ -71,7 +71,7 @@ test('numbers format like the HUD', () => {
     [0, 999, 1000, 1234, 7300, 14000, 2.5e6, 9999].map(formatNumber),
     ['0', '999', '1K', '1.2K', '7.3K', '14K', '2.5M', '9.9K'],
   )
-  assert.equal(formatDistance(1050.7), '1,050 m')
+  assert.equal(formatDistance(1050.7), '1,050 stairs')
 })
 
 // --- Levels and rebirth ----------------------------------------------------------
@@ -233,6 +233,20 @@ test('the very first roll pays for the second tire, as the guide asks', () => {
 })
 
 // --- Buying ----------------------------------------------------------------------
+
+test('Palm Beach slinkies are sold in Palm Beach only, in order like the rest', () => {
+  const p = createProfile('w2', 'W2')
+  p.ownedTires = TIRES.slice(0, 24).map((t) => t.id)
+  p.wins = 1e18
+  const first = TIRES[24]
+  assert.equal(first.world, 1)
+  assert.equal(buyTire(p, first.id).ok, false)
+  p.world2Unlocked = true
+  p.world = 1
+  assert.equal(buyTire(p, TIRES[25].id).ok, false)
+  assert.equal(buyTire(p, first.id).ok, true)
+  assert.equal(p.equippedTire, first.id)
+})
 
 test('tires are bought in order with Wins', () => {
   const p = createProfile('a', 'A')
